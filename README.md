@@ -1,5 +1,6 @@
 ## Setup
 Run ```npm install``` to setup
+
 Run ```npm run deploy``` to deploy to github pages
 
 This project was bootstrapped with [Create React App](https://github.com/facebookincubator/create-react-app).
