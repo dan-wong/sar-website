@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import { compose, withProps } from 'recompose';
-import { withScriptjs, withGoogleMap, GoogleMap, Marker } from "react-google-maps"
+
+import SARMap from './components/map/SARMap';
 
 import API from './api';
 
@@ -30,35 +30,9 @@ class App extends Component {
 
   render() {
     if (this.state.markers && this.state.markers.length > 0) {
-      const MyMapComponent = compose(
-        withProps({
-          googleMapURL: "https://maps.googleapis.com/maps/api/js?key=AIzaSyC0DPzLiu9R47vA0XWr-GOyCr2cx8JBDaU&v=3.exp&libraries=geometry,drawing,places",
-          loadingElement: <div style={{ height: `100%` }} />,
-          containerElement: <div style={{ height: `100vh` }} />,
-          mapElement: <div style={{ height: `100%` }} />,
-        }),
-        withScriptjs,
-        withGoogleMap
-      )((props) =>
-        <GoogleMap
-          defaultZoom={16}
-          defaultCenter={{ lat: -36.852329, lng: 174.769116 }}
-        >
-
-        {
-          props.markers.map((marker => {
-            return <Marker position={{ lat: marker.lat, lng: marker.lng}} key={marker.id} />
-          }))
-        }
-
-        </GoogleMap>
-      )
-
       return (
-        <div>
-          <MyMapComponent markers={this.state.markers}/>
-        </div>
-      );
+        <SARMap markers={this.state.markers} />
+      )
     } else {
       return (<h1>Loading...</h1>)
     }
