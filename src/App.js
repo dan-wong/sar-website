@@ -12,14 +12,32 @@ class App extends Component {
     }
   }
 
+  getUrlParams(param) {
+    var url_string = window.location.href;
+    var url = new URL(url_string);
+    var query = url.searchParams.get(param);
+    return query;
+  }
+
   componentDidMount() {
+    var groupID = this.getUrlParams("groupID");
+    var personID = this.getUrlParams("personID");
+
+    if (groupID == null) {
+      groupID = 1;
+    }
+
+    if (personID == null) {
+      personID = 1;
+    }
+
+    console.log(groupID + ", " + personID);
     let currentComponent = this;
-    API.getSearchTrack(1,1).then(function(response) {
-      const events = JSON.parse(response);
+    API.getSearchTrack(groupID, personID).then(function(response) {
       var markersList = [];
 
-      for (var i=0; i<events.events.length; i++) {
-        markersList.push(events.events[i]);
+      for (var i=0; i<response.length; i++) {
+        markersList.push(response[i]);
       }
 
       currentComponent.setState({
@@ -30,6 +48,7 @@ class App extends Component {
 
   render() {
     if (this.state.markers && this.state.markers.length > 0) {
+      console.log(this.state.markers);
       return (
         <SARMap markers={this.state.markers} />
       )

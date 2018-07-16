@@ -19,7 +19,7 @@ export default class SARMap extends React.Component {
   render() {
     var coordinates = []
     this.props.markers.forEach(element => {
-      coordinates.push({ lat: element.lat, lng: element.lng });
+      coordinates.push({ lat: element.latitude, lng: element.longitude });
     })
 
     const SARMap = compose(
@@ -40,9 +40,10 @@ export default class SARMap extends React.Component {
 
         {
           this.props.markers.map((marker => {
+            console.log(marker.id);
             return <Marker 
-                key={marker.id} 
-                position={{ lat: marker.lat, lng: marker.lng }} />
+              key={marker.id} 
+              position={{ lat: marker.latitude, lng: marker.longitude }} />
           }))
         }
 
