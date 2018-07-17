@@ -20,41 +20,41 @@ class App extends Component {
   }
 
   componentDidMount() {
-    var groupID = this.getUrlParams("groupID");
-    var personID = this.getUrlParams("personID");
+    // var groupID = this.getUrlParams("groupID");
+    // var personID = this.getUrlParams("personID");
 
-    if (groupID == null) {
-      groupID = 1;
-    }
+    // if (groupID == null) {
+    //   groupID = 1;
+    // }
 
-    if (personID == null) {
-      personID = 1;
-    }
+    // if (personID == null) {
+    //   personID = 1;
+    // }
 
-    console.log(groupID + ", " + personID);
-    let currentComponent = this;
-    API.getSearchTrack(groupID, personID).then(function(response) {
-      var markersList = [];
+    // let currentComponent = this;
+    // API.getSearchTrack(groupID, personID).then(function(response) {
+    //   var markersList = [];
 
-      for (var i=0; i<response.length; i++) {
-        markersList.push(response[i]);
-      }
+    //   for (var i=0; i<response.length; i++) {
+    //     markersList.push(response[i]);
+    //   }
 
-      currentComponent.setState({
-        markers: markersList,
-      });
-    })
+    //   currentComponent.setState({
+    //     markers: markersList,
+    //   });
+    // })
   }
 
   render() {
-    if (this.state.markers && this.state.markers.length > 0) {
-      console.log(this.state.markers);
-      return (
-        <SARMap markers={this.state.markers} />
-      )
-    } else {
-      return (<h1>Loading...</h1>)
-    }
+    // if (this.state.markers && this.state.markers.length > 0) {
+    //   console.log(this.state.markers);
+    //   return (
+    //     <SARMap markers={this.state.markers} />
+    //   )
+    // } else {
+    //   return (<h1>Loading...</h1>)
+    // }
+    return <SARMap markers={this.state.markers} />
   }
 }
 
