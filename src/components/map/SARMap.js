@@ -5,11 +5,11 @@ import { Map, View, Feature } from 'ol';
 import TileLayer from 'ol/layer/Tile';
 import XYZ from 'ol/source/XYZ';
 import { transform } from 'ol/proj';
-import { Attribution, ScaleLine, defaults as DefaultControls } from 'ol/control';
+import { ScaleLine, defaults as DefaultControls } from 'ol/control';
 import SourceVector from 'ol/source/Vector';
 import LayerVector from 'ol/layer/Vector';
-import { Point } from 'ol/geom/';
-import { Style, Icon } from 'ol/style/';
+import { Point, LineString } from 'ol/geom/';
+import { Style, Icon, Fill, Stroke } from 'ol/style/';
 
 import marker from '../../img/marker.png';
 
@@ -30,19 +30,24 @@ export default class SARMap extends React.Component {
     var vectorSource = new SourceVector({
       //empty vector
     });
-
+    
+    var transformedPoints = [];
     for (var i=0; i<this.props.markers.length; i++) {
       const marker = this.props.markers[i];
 
+      const point = transform([marker.longitude, marker.latitude], 'EPSG:4326', 'EPSG:3857');
+
+      transformedPoints.push(point); //For the line
+
       var iconFeature = new Feature({
-        geometry: new Point(transform([marker.longitude, marker.latitude], 'EPSG:4326', 'EPSG:3857')),
+        geometry: new Point(point),
         name: 'Marker ' + marker.id
       });
   
       vectorSource.addFeature(iconFeature);
     }
 
-    //create the style
+    //create the style for the markers
     var iconStyle = new Style({
       image: new Icon(/** @type {olx.style.IconOptions} */ ({
         anchor: [0.5, 46],
@@ -53,10 +58,28 @@ export default class SARMap extends React.Component {
       }))
     });
 
-    var vectorLayer = new LayerVector({
+    //Marker vector layer
+    var markerLayer = new LayerVector({
       source: vectorSource,
       style: iconStyle
     });
+    
+    //Line
+    var featureLine = new Feature({
+      geometry: new LineString(transformedPoints)
+    });
+
+    var vectorLine = new SourceVector({});
+    vectorLine.addFeature(featureLine);
+
+    //Line vector layer
+    var lineLayer = new LayerVector({
+      source: vectorLine,
+      style: new Style({
+        fill: new Fill({ color: '#00FF00', weight: 4 }),
+        stroke: new Stroke({ color: '#00FF00', width: 2 })
+      })
+    })
 
     let map = new Map({
       layers: [
@@ -65,7 +88,8 @@ export default class SARMap extends React.Component {
             url: 'http://tiles-{a-d}.data-cdn.linz.govt.nz/services;key=877beb090a4e4fab8c6ea96aefab3526/tiles/v4/layer=50767/EPSG:3857/{z}/{x}/{y}.png', //50767
           })
         }),
-        vectorLayer
+        markerLayer,
+        lineLayer
       ],
       target: 'map',
       view: new View({

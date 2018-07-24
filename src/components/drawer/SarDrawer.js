@@ -6,8 +6,9 @@ import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import List from '@material-ui/core/List';
 import Typography from '@material-ui/core/Typography';
-import Divider from '@material-ui/core/Divider';
-import { mailFolderListItems, otherMailFolderListItems } from './tileData';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemText from '@material-ui/core/ListItemText';
+import Checkbox from '@material-ui/core/Checkbox';
 
 const drawerWidth = 240;
 
@@ -53,9 +54,15 @@ function SarDrawer(props) {
         }}
       >
         <div className={classes.toolbar} />
-        <List>{mailFolderListItems}</List>
-        <Divider />
-        <List>{otherMailFolderListItems}</List>
+        <List>
+          <ListItem button>
+            <Checkbox
+              onChange={() => { console.log("changed!") }}
+              value="checkedA"
+            />
+            <ListItemText primary="Filter Points" />
+          </ListItem>
+        </List>
       </Drawer>
       <main className={classes.content}>
         <div className={classes.toolbar} />
