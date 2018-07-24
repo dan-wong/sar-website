@@ -11,6 +11,8 @@ import LayerVector from 'ol/layer/Vector';
 import { Point } from 'ol/geom/';
 import { Style, Icon } from 'ol/style/';
 
+import marker from '../../img/marker.png';
+
 export default class SARMap extends React.Component {
   static propTypes = {
     markers: PropTypes.array,
@@ -30,11 +32,22 @@ export default class SARMap extends React.Component {
     });
 
     var iconFeature = new Feature({
-      geometry: new Point(transform([174.7690, -36.8522], 'EPSG:4326',   'EPSG:3857')),
-      name: 'Auckland CBD'
+      geometry: new Point(transform([174.7690, -36.8522], 'EPSG:4326', 'EPSG:3857')),
+      name: 'Marker '
     });
 
     vectorSource.addFeature(iconFeature);
+
+    for (var i=0; i<this.props.markers.length; i++) {
+      const marker = this.props.markers[i];
+
+      var iconFeature = new Feature({
+        geometry: new Point(transform([marker.longitude, marker.latitude], 'EPSG:4326', 'EPSG:3857')),
+        name: 'Marker ' + marker.id
+      });
+  
+      vectorSource.addFeature(iconFeature);
+    }
 
     //create the style
     var iconStyle = new Style({
@@ -42,8 +55,8 @@ export default class SARMap extends React.Component {
         anchor: [0.5, 46],
         anchorXUnits: 'fraction',
         anchorYUnits: 'pixels',
-        opacity: 0.75,
-        src: '../../img/marker.png'
+        opacity: 1,
+        src: marker
       }))
     });
 
