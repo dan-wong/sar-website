@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 
 import SARMap from './components/map/SARMap';
-import SarAppBar from './components/appbar/SarAppBar';
+import SarDrawer from './components/drawer/Drawer';
 
 import API from './api';
 
@@ -47,19 +47,10 @@ class App extends Component {
   }
 
   render() {
-    // if (this.state.markers && this.state.markers.length > 0) {
-    //   return (
-    //     <SarAppBar>
-    //       <SARMap markers={this.state.markers} />
-    //     </SarAppBar>
-    //   )
-    // } else {
-    //   return (<h1>Loading...</h1>)
-    // }
     return (
-      <SarAppBar>
+      <SarDrawer title={"SAR Webservice"}>
         <SARMap markers={this.state.markers} />
-      </SarAppBar>
+      </SarDrawer>
     )
   }
 }
