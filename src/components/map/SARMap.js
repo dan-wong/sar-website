@@ -26,70 +26,42 @@ export default class SARMap extends React.Component {
     center: { lat: -36.852329, lng: 174.769116 }
   }
 
-  componentDidMount() {
-    var vectorSource = new SourceVector({
-      //empty vector
-    });
-    
-    var transformedPoints = [];
-    for (var i=0; i<this.props.markers.length; i++) {
-      const marker = this.props.markers[i];
+  constructor(props) {
+    super(props);
+    this.state = {
+      map: null,
+      markerSource: new SourceVector({}),
+      lineSource: new SourceVector({})
+    };
+  }
 
-      const point = transform([marker.longitude, marker.latitude], 'EPSG:4326', 'EPSG:3857');
-
-      transformedPoints.push(point); //For the line
-
-      var iconFeature = new Feature({
-        geometry: new Point(point),
-        name: 'Marker ' + marker.id
-      });
-  
-      vectorSource.addFeature(iconFeature);
-    }
-
-    //create the style for the markers
-    var iconStyle = new Style({
-      image: new Icon(/** @type {olx.style.IconOptions} */ ({
-        anchor: [0.5, 46],
-        anchorXUnits: 'fraction',
-        anchorYUnits: 'pixels',
-        opacity: 1,
-        src: marker
-      }))
-    });
-
-    //Marker vector layer
-    var markerLayer = new LayerVector({
-      source: vectorSource,
-      style: iconStyle
-    });
-    
-    //Line
-    var featureLine = new Feature({
-      geometry: new LineString(transformedPoints)
-    });
-
-    var vectorLine = new SourceVector({});
-    vectorLine.addFeature(featureLine);
-
-    //Line vector layer
-    var lineLayer = new LayerVector({
-      source: vectorLine,
-      style: new Style({
-        fill: new Fill({ color: '#00FF00', weight: 4 }),
-        stroke: new Stroke({ color: '#00FF00', width: 2 })
-      })
-    })
-
-    let map = new Map({
+  createNewMap() {
+    return new Map({
       layers: [
         new TileLayer({
           source: new XYZ({
             url: 'http://tiles-{a-d}.data-cdn.linz.govt.nz/services;key=877beb090a4e4fab8c6ea96aefab3526/tiles/v4/layer=50767/EPSG:3857/{z}/{x}/{y}.png', //50767
           })
         }),
-        markerLayer,
-        lineLayer
+        new LayerVector({
+          source: this.state.markerSource,
+          style: new Style({
+            image: new Icon(/** @type {olx.style.IconOptions} */ ({
+              anchor: [0.5, 46],
+              anchorXUnits: 'fraction',
+              anchorYUnits: 'pixels',
+              opacity: 1,
+              src: marker
+            }))
+          })
+        }),
+        new LayerVector({
+          source: this.state.lineSource,
+          style: new Style({
+            fill: new Fill({ color: '#00FF00', weight: 4 }),
+            stroke: new Stroke({ color: '#00FF00', width: 2 })
+          })
+        })
       ],
       target: 'map',
       view: new View({
@@ -104,6 +76,67 @@ export default class SARMap extends React.Component {
         new ScaleLine()
       ])
     });
+  }
+
+  transformMarkers(markers) {
+    var transformedPoints = [];
+    for (var i=0; i<this.props.markers.length; i++) {
+      const marker = this.props.markers[i];
+      const point = transform([marker.longitude, marker.latitude], 'EPSG:4326', 'EPSG:3857');
+      transformedPoints.push(point); 
+    }
+    return transformedPoints;
+  }
+  
+  //Takes transformed markers
+  createMarkersFeature(markers) {
+    var markerSource = this.state.markerSource;
+    for (var i=0; i<markers.length; i++) {
+      var point = markers[i];
+      var iconFeature = new Feature({
+        geometry: new Point(point),
+        name: 'Marker ' + marker.id
+      });
+      markerSource.addFeature(iconFeature);
+    }
+    
+    //create the style for the markers
+    var iconStyle = new Style({
+      image: new Icon(/** @type {olx.style.IconOptions} */ ({
+        anchor: [0.5, 46],
+        anchorXUnits: 'fraction',
+        anchorYUnits: 'pixels',
+        opacity: 1,
+        src: marker
+      }))
+    });
+
+    //Marker vector layer
+    var markerLayer = new LayerVector({
+      source: markerSource,
+      style: iconStyle
+    });
+
+    return markerLayer;
+  }
+
+  //Takes transformed markers
+  createLineFeature(markers) {
+    var lineSource = this.state.lineSource;
+    var featureLine = new Feature({
+      geometry: new LineString(markers)
+    });
+
+    lineSource.addFeature(featureLine);
+  }
+
+  componentDidMount() {
+    this.state.map = this.createNewMap();
+
+    var transformedMarkers = this.transformMarkers(this.props.markers);
+    let map = this.state.map;
+    this.createMarkersFeature(transformedMarkers);
+    this.createLineFeature(transformedMarkers);
   }
 
   render() {

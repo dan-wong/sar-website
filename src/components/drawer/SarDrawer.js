@@ -10,6 +10,8 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import Checkbox from '@material-ui/core/Checkbox';
 
+import SARMap from '../map/SARMap';
+
 const drawerWidth = 240;
 
 const styles = theme => ({
@@ -36,7 +38,7 @@ const styles = theme => ({
 });
 
 function SarDrawer(props) {
-  const { classes, children, title } = props;
+  const { classes, markers, title } = props;
 
   return (
     <div className={classes.root}>
@@ -66,7 +68,8 @@ function SarDrawer(props) {
       </Drawer>
       <main className={classes.content}>
         <div className={classes.toolbar} />
-        {children}
+        {/* ref={instance => { this.child = instance; }} */}
+        <SARMap  markers={markers} />
       </main>
     </div>
   );
@@ -74,7 +77,8 @@ function SarDrawer(props) {
 
 SarDrawer.propTypes = {
   classes: PropTypes.object.isRequired,
-  title: PropTypes.string.isRequired
+  title: PropTypes.string.isRequired,
+  markers: PropTypes.array,
 };
 
 export default withStyles(styles)(SarDrawer);
