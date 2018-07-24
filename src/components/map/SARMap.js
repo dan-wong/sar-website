@@ -31,13 +31,6 @@ export default class SARMap extends React.Component {
       //empty vector
     });
 
-    var iconFeature = new Feature({
-      geometry: new Point(transform([174.7690, -36.8522], 'EPSG:4326', 'EPSG:3857')),
-      name: 'Marker '
-    });
-
-    vectorSource.addFeature(iconFeature);
-
     for (var i=0; i<this.props.markers.length; i++) {
       const marker = this.props.markers[i];
 
@@ -70,9 +63,6 @@ export default class SARMap extends React.Component {
         new TileLayer({
           source: new XYZ({
             url: 'http://tiles-{a-d}.data-cdn.linz.govt.nz/services;key=877beb090a4e4fab8c6ea96aefab3526/tiles/v4/layer=50767/EPSG:3857/{z}/{x}/{y}.png', //50767
-            attributions: [
-              new Attribution({ html: '<a href="http://data.linz.govt.nz">LINZ. CC BY 4.0</a>' })
-            ]
           })
         }),
         vectorLayer
@@ -93,9 +83,10 @@ export default class SARMap extends React.Component {
   }
 
   render() {
+    // 64px is the height of the AppBar
     return (
       <section className="panel-map">
-        <div id="map" className="map" ref="olmap" style={{height: '100vh'}}></div>
+        <div id="map" className="map" ref="olmap" style={{height: 'calc(100vh - 64px)'}}></div> 
       </section>
     );
   }

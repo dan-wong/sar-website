@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 
 import SARMap from './components/map/SARMap';
+import SarAppBar from './components/appbar/SarAppBar';
 
 import API from './api';
 
@@ -46,13 +47,20 @@ class App extends Component {
   }
 
   render() {
-    if (this.state.markers && this.state.markers.length > 0) {
-      return (
+    // if (this.state.markers && this.state.markers.length > 0) {
+    //   return (
+    //     <SarAppBar>
+    //       <SARMap markers={this.state.markers} />
+    //     </SarAppBar>
+    //   )
+    // } else {
+    //   return (<h1>Loading...</h1>)
+    // }
+    return (
+      <SarAppBar>
         <SARMap markers={this.state.markers} />
-      )
-    } else {
-      return (<h1>Loading...</h1>)
-    }
+      </SarAppBar>
+    )
   }
 }
 
