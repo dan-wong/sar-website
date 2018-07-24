@@ -130,11 +130,14 @@ export default class SARMap extends React.Component {
     lineSource.addFeature(featureLine);
   }
 
+  checked() {
+    console.log("checked");
+  }
+
   componentDidMount() {
     this.state.map = this.createNewMap();
 
     var transformedMarkers = this.transformMarkers(this.props.markers);
-    let map = this.state.map;
     this.createMarkersFeature(transformedMarkers);
     this.createLineFeature(transformedMarkers);
   }
