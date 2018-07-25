@@ -1,84 +1,79 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
+import { renderComponent } from 'recompose';
+import { getAllSearches } from '../../api';
 
-const styles = theme => ({
-  root: {
-    width: '100%',
-    marginTop: theme.spacing.unit * 3,
-    overflowX: 'auto',
-  },
-  table: {
-    minWidth: 700,
-  },
-});
+export default class SARWelcome extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      searches: []
+    };
+  }
 
-let id = 0;
-function createData(name, calories, fat, carbs, protein) {
-  id += 1;
-  return { id, name, calories, fat, carbs, protein };
+  componentDidMount() {
+    let currentComponent = this;
+    getAllSearches().then(function (response) {
+      var searchList = [];
+
+      for (var i = 0; i < response.length; i++) {
+        searchList.push(response[i]);
+      }
+
+      currentComponent.setState({
+        searches: searchList,
+      });
+      console.log(searchList);
+    })
+  }
+
+  render() {
+    const pStyle = {
+      fontSize: '45px',
+      textAlign: 'center',
+      color: 'darkBlue'
+    }
+
+    return (
+      <div>
+        <h1 style={pStyle}>Search And Rescue Home</h1>
+        <Paper style={{ margin: "5%" }}>
+          <Table >
+            <TableHead>
+              <TableRow>
+                <TableCell numeric>ID</TableCell>
+                <TableCell >Name of search</TableCell>
+                <TableCell numeric >Number of groups</TableCell>
+                <TableCell numeric>Number of searchers</TableCell>
+                <TableCell >Status</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {this.state.searches.map(search => {
+                return (
+                  <TableRow key={search.id}>
+                    <TableCell numeric >{search.id}</TableCell>
+                    <TableCell component="a" href="google.com" scope="row">
+                      {search.name}
+                    </TableCell>
+                    <TableCell numeric >1</TableCell>
+                    <TableCell numeric>1</TableCell>
+                    <TableCell >{search.pin}</TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </Paper>
+      </div>
+    );
+  }
 }
 
-const data = [
-  createData('Frozen yoghurt', 159, 6.0, 24, 4.0),
-  createData('Ice cream sandwich', 237, 9.0, 37, 4.3),
-  createData('Eclair', 262, 16.0, 24, 6.0),
-  createData('Cupcake', 305, 3.7, 67, 4.3),
-  createData('Gingerbread', 356, 16.0, 49, 3.9),
-];
 
-function SARWelcome(props) {
-  const { classes } = props;
-
-  const pStyle = {
-    fontSize: '45px',
-    textAlign: 'center',
-    color: 'darkBlue'
-  };
-
-  return (
-    <div>
-      <h1 style={pStyle}>Search And Rescue App</h1>
-      <Paper className={classes.root}>
-        <Table className={classes.table}>
-          <TableHead>
-            <TableRow>
-              <TableCell>Dessert (100g serving)</TableCell>
-              <TableCell numeric >Calories</TableCell>
-              <TableCell numeric>Fat (g)</TableCell>
-              <TableCell numeric>Carbs (g)</TableCell>
-              <TableCell numeric>Protein (g)</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {data.map(n => {
-              return (
-                <TableRow key={n.id}>
-                  <TableCell component="a" href="google.com" scope="row">
-                    {n.name}
-                  </TableCell>
-                  <TableCell numeric >{n.calories}</TableCell>
-                  <TableCell numeric>{n.fat}</TableCell>
-                  <TableCell numeric>{n.carbs}</TableCell>
-                  <TableCell numeric>{n.protein}</TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-      </Paper>
-    </div>
-  );
-}
-
-SARWelcome.propTypes = {
-  classes: PropTypes.object.isRequired,
-};
-
-export default withStyles(styles)(SARWelcome);
