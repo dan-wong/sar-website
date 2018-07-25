@@ -84,6 +84,16 @@ const styles = theme => ({
 // };
 
 export default class SarDrawer extends React.Component {
+  state = {
+    filterPoints: false,
+  }
+
+  handleChange = (name) => (event, checked) => {
+    this.setState((state) => {
+      return { [name]: !state[name]};
+    })
+  }
+
   static propTypes = {
     title: PropTypes.string.isRequired,
     markers: PropTypes.array,
@@ -121,7 +131,7 @@ export default class SarDrawer extends React.Component {
   render() {
     const { styles, markers, title } = this.props;
 
-    const sarmap = <SARMap onRef={ref => (this.child = ref)} markers={markers} />
+    const sarmap = <SARMap filterPoints={this.state.filterPoints} onRef={ref => (this.child = ref)} markers={markers} />
 
     return (
       <div className={styles.root}>
@@ -140,10 +150,9 @@ export default class SarDrawer extends React.Component {
       >
         <div className={styles.toolbar} />
         <List>
-          <ListItem button>
+          <ListItem button onClick={this.handleChange('filterPoints')}>
             <Checkbox
-              onChange={() => { this.child.checked() }}
-              value="checked"
+              checked={this.state.filterPoints}
             />
             <ListItemText primary="Filter Points" />
           </ListItem>

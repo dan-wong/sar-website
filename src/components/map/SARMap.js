@@ -143,6 +143,7 @@ export default class SARMap extends React.Component {
   }
 
   render() {
+    console.log(this.props.fil);
     // 64px is the height of the AppBar
     return (
       <section className="panel-map">
