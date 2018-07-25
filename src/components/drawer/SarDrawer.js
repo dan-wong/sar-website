@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-
+import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
@@ -37,53 +37,7 @@ const styles = theme => ({
   toolbar: theme.mixins.toolbar,
 });
 
-// function SarDrawer(props) {
-//   const { classes, markers, title } = props;
-
-//   const sarmap = <SARMap onRef={ref => (this.child = ref)} markers={markers} />
-//   const checked = () => { console.log(this.child) }
-
-//   return (
-//     <div className={classes.root}>
-//       <AppBar position="absolute" className={classes.appBar}>
-//         <Toolbar>
-//           <Typography variant="title" color="inherit" noWrap>
-//             {title}
-//           </Typography>
-//         </Toolbar>
-//       </AppBar>
-//       <Drawer
-//         variant="permanent"
-//         classes={{
-//           paper: classes.drawerPaper,
-//         }}
-//       >
-//         <div className={classes.toolbar} />
-//         <List>
-//           <ListItem button>
-//             <Checkbox
-//               onChange={() => { checked() }}
-//               value="checked"
-//             />
-//             <ListItemText primary="Filter Points" />
-//           </ListItem>
-//         </List>
-//       </Drawer>
-//       <main className={classes.content}>
-//         <div className={classes.toolbar} />
-//         {sarmap}
-//       </main>
-//     </div>
-//   );
-// }
-
-// SarDrawer.propTypes = {
-//   classes: PropTypes.object.isRequired,
-//   title: PropTypes.string.isRequired,
-//   markers: PropTypes.array,
-// };
-
-export default class SarDrawer extends React.Component {
+class SarDrawer extends React.Component {
   state = {
     filterPoints: false,
   }
@@ -124,18 +78,12 @@ export default class SarDrawer extends React.Component {
     })
   }
 
-  checked() {
-    this.child.checked();
-  }
-
   render() {
-    const { styles, markers, title } = this.props;
-
-    const sarmap = <SARMap filterPoints={this.state.filterPoints} onRef={ref => (this.child = ref)} markers={markers} />
+    const { classes, markers, title } = this.props;
 
     return (
-      <div className={styles.root}>
-       <AppBar position="absolute" className={styles.appBar}>
+      <div className={classes.root}>
+       <AppBar position="absolute" className={classes.appBar}>
          <Toolbar>
            <Typography variant="title" color="inherit" noWrap>
              {title}
@@ -145,10 +93,10 @@ export default class SarDrawer extends React.Component {
        <Drawer
         variant="permanent"
         classes={{
-          paper: styles.drawerPaper,
+          paper: classes.drawerPaper,
         }}
       >
-        <div className={styles.toolbar} />
+        <div className={classes.toolbar} />
         <List>
           <ListItem button onClick={this.handleChange('filterPoints')}>
             <Checkbox
@@ -158,11 +106,13 @@ export default class SarDrawer extends React.Component {
           </ListItem>
         </List>
       </Drawer>
-      <main className={styles.content}>
-        <div className={styles.toolbar} />
-        {sarmap}
+      <main className={classes.content}>
+        <div className={classes.toolbar} />
+        <SARMap filterPoints={this.state.filterPoints} markers={markers} />
       </main>
     </div>
     );
   }
 }
+
+export default withStyles(styles)(SarDrawer);

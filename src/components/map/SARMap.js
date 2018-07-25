@@ -11,7 +11,12 @@ import LayerVector from 'ol/layer/Vector';
 import { Point, LineString } from 'ol/geom/';
 import { Style, Icon, Fill, Stroke } from 'ol/style/';
 
+import { distanceInKmBetweenCoordinates } from '../../functions/LocationFunctions';
+
 import marker from '../../img/marker.png';
+
+const MAX_SPEED = 80; // 100 km/h
+const MAX_ACCURACY = 100; // 100m
 
 export default class SARMap extends React.Component {
   static propTypes = {
@@ -80,8 +85,8 @@ export default class SARMap extends React.Component {
 
   transformMarkers(markers) {
     var transformedPoints = [];
-    for (var i=0; i<this.props.markers.length; i++) {
-      const marker = this.props.markers[i];
+    for (var i=0; i<markers.length; i++) {
+      const marker = markers[i];
       const point = transform([marker.longitude, marker.latitude], 'EPSG:4326', 'EPSG:3857');
       transformedPoints.push(point); 
     }
@@ -123,6 +128,7 @@ export default class SARMap extends React.Component {
   //Takes transformed markers
   createLineFeature(markers) {
     var lineSource = this.state.lineSource;
+    lineSource.clear();
     var featureLine = new Feature({
       geometry: new LineString(markers)
     });
@@ -130,20 +136,70 @@ export default class SARMap extends React.Component {
     lineSource.addFeature(featureLine);
   }
 
-  checked() {
-    console.log("checked");
-  }
-
   componentDidMount() {
-    this.state.map = this.createNewMap();
+    this.setState((state) => {
+      map: this.createNewMap();
+    });
 
     var transformedMarkers = this.transformMarkers(this.props.markers);
+
     this.createMarkersFeature(transformedMarkers);
     this.createLineFeature(transformedMarkers);
   }
 
+  componentWillUpdate() {
+    if (!this.props.filterPoints) {
+      var transformedMarkers = this.transformMarkers(this.filterPoints(this.props.markers));
+      this.updateMarkers(transformedMarkers);
+      this.createLineFeature(transformedMarkers);
+    } else {
+      var transformedMarkers = this.transformMarkers(this.props.markers);
+      this.updateMarkers(transformedMarkers);
+      this.createLineFeature(transformedMarkers);
+    }
+  }
+
+  updateMarkers(markers) {
+    var markerSource = this.state.markerSource;
+    markerSource.clear();
+    for (var i=0; i<markers.length; i++) {
+      var point = markers[i];
+      var iconFeature = new Feature({
+        geometry: new Point(point),
+      });
+      markerSource.addFeature(iconFeature);
+    }
+  }
+
+  filterPoints(markers) {
+    var filteredPoints = [];
+
+    var prev = null;
+    for (var i=0; i<markers.length; i++) {
+      var current = markers[i];
+
+      if (current.accuracy <= MAX_ACCURACY) {
+        if (prev != null) {
+          var distance = Math.abs(distanceInKmBetweenCoordinates(prev.latitude,prev.longitude, current.latitude, current.longitude));
+          
+          var currentTime = new Date(current.timestamp);
+          var prevTime = new Date(prev.timestamp);
+
+          var timeDifference = (currentTime - prevTime) / 3600000; //In hrs
+
+          if (distance/timeDifference < MAX_SPEED) {
+            filteredPoints.push(current);
+          }
+        }
+      }
+
+      prev = current;
+    }
+
+    return filteredPoints;
+  }
+
   render() {
-    console.log(this.props.fil);
     // 64px is the height of the AppBar
     return (
       <section className="panel-map">
