@@ -40,7 +40,7 @@ class App extends Component {
       }
 
       currentComponent.setState({
-        markers: markersList,
+        markers: [...currentComponent.state.markers, markersList]
       });
     })
   }
