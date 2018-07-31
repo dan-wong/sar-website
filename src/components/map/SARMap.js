@@ -14,10 +14,15 @@ import { Style, Circle, Fill, Stroke } from 'ol/style/';
 
 import { distanceInKmBetweenCoordinates } from '../../functions/LocationFunctions';
 
-import marker from '../../img/marker.png';
-
 const MAX_SPEED = 80; // 100 km/h
 const MAX_ACCURACY = 100; // 100m
+
+const DEFAULT_LAYER = new TileLayer({
+  source: new XYZ({
+    url: 'http://tiles-{a-d}.data-cdn.linz.govt.nz/services;key=877beb090a4e4fab8c6ea96aefab3526/tiles/v4/layer=50767/EPSG:3857/{z}/{x}/{y}.png', //50767
+  })
+});
+var MARKER_LAYERS = [];
 
 export default class SARMap extends React.Component {
   static propTypes = {
@@ -36,21 +41,17 @@ export default class SARMap extends React.Component {
     super(props);
     this.state = {
       map: null,
-      markerLayers: []
+      // markerLayers: []
     };
   }
 
   createNewMap() {
     return new Map({
       layers: [
-        new TileLayer({
-          source: new XYZ({
-            url: 'http://tiles-{a-d}.data-cdn.linz.govt.nz/services;key=877beb090a4e4fab8c6ea96aefab3526/tiles/v4/layer=50767/EPSG:3857/{z}/{x}/{y}.png', //50767
-          })
-        }),
+        DEFAULT_LAYER,
         new LayerGroup({
           name: 'layerGroup',
-          layers: this.state.markerLayers
+          layers: MARKER_LAYERS
         }),
       ],
       target: 'map',
@@ -126,17 +127,17 @@ export default class SARMap extends React.Component {
         stroke: new Stroke({ color: '#00FF00', width: 2 })
       })
     }));
-
-    this.state.markerLayers.push(...layerArray);
+    
+    return layerArray;
   }
 
   componentDidMount() {
-    this.setState(() => {
-      map: this.createNewMap();
-    });
-
     var transformedMarkers = this.transformMarkers(this.props.markers);
-    this.addMarkersLayer(transformedMarkers[0]);
+    MARKER_LAYERS = this.addMarkersLayer(transformedMarkers[0]);
+
+    this.setState(() => ({
+      map: this.createNewMap()
+    }));
   }
 
   componentWillUpdate() {
@@ -146,44 +147,47 @@ export default class SARMap extends React.Component {
     } else {
       transformedMarkers = this.transformMarkers(this.props.markers);
     }
-    this.addMarkersLayer(transformedMarkers[0]);
-  }
 
-  updateMarkers(markers) {
-    var markerSource = this.state.markerSource;
-    markerSource.clear();
-    for (var i=0; i<markers.length; i++) {
-      var point = markers[i];
-      var iconFeature = new Feature({
-        geometry: new Point(point),
+    if (this.state.map != null) {
+      var layers = [];
+      layers.push(DEFAULT_LAYER);
+      layers.push(...this.addMarkersLayer(transformedMarkers[0]));
+      var layerGroup = new LayerGroup({
+        name: 'layerGroup',
+        layers: layers
       });
-      markerSource.addFeature(iconFeature);
+      this.state.map.setLayerGroup(layerGroup);
     }
   }
 
   filterPoints(markers) {
     var filteredPoints = [];
-
-    var prev = null;
+    
     for (var i=0; i<markers.length; i++) {
-      var current = markers[i];
-
-      if (current.accuracy <= MAX_ACCURACY) {
-        if (prev != null) {
-          var distance = Math.abs(distanceInKmBetweenCoordinates(prev.latitude,prev.longitude, current.latitude, current.longitude));
-          
-          var currentTime = new Date(current.timestamp);
-          var prevTime = new Date(prev.timestamp);
-
-          var timeDifference = (currentTime - prevTime) / 3600000; //In hrs
-
-          if (distance/timeDifference < MAX_SPEED) {
-            filteredPoints.push(current);
+      var currentListOfMarkers = markers[i];
+      var temp = [];
+      var prev = null;
+      for (var j=0; j<currentListOfMarkers.length; j++) {
+        var current = currentListOfMarkers[j];
+  
+        if (current.accuracy <= MAX_ACCURACY) {
+          if (prev != null) {
+            var distance = Math.abs(distanceInKmBetweenCoordinates(prev.latitude,prev.longitude, current.latitude, current.longitude));
+            
+            var currentTime = new Date(current.timestamp);
+            var prevTime = new Date(prev.timestamp);
+  
+            var timeDifference = (currentTime - prevTime) / 3600000; //In hrs
+  
+            if (distance/timeDifference < MAX_SPEED) {
+              temp.push(current);
+            }
           }
         }
+        prev = current;
       }
-
-      prev = current;
+      console.log(temp);
+      filteredPoints.push(temp);
     }
 
     return filteredPoints;
