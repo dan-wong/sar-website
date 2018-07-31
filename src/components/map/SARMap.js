@@ -13,6 +13,7 @@ import { Point, LineString } from 'ol/geom/';
 import { Style, Circle, Fill, Stroke } from 'ol/style/';
 
 import { distanceInKmBetweenCoordinates } from '../../functions/LocationFunctions';
+import { rainbow } from '../../functions/ColorGenerator';
 
 const MAX_SPEED = 80; // 100 km/h
 const MAX_ACCURACY = 100; // 100m
@@ -41,7 +42,6 @@ export default class SARMap extends React.Component {
     super(props);
     this.state = {
       map: null,
-      // markerLayers: []
     };
   }
 
@@ -92,7 +92,7 @@ export default class SARMap extends React.Component {
    * 
    * @param {Array} markers 
    */
-  addMarkersLayer(markers) {
+  addMarkersLayer(markers, numOfSteps, step) {
     var layerArray = [];
     var markerSource = new SourceVector({});
     for (var i=0; i<markers.length; i++) {
@@ -109,7 +109,7 @@ export default class SARMap extends React.Component {
         image: new Circle({
           radius: 8,
           fill: new Fill({
-            color: 'blue'
+            color: rainbow(numOfSteps, step)
           })
         })
       })
@@ -123,8 +123,8 @@ export default class SARMap extends React.Component {
     layerArray.push(new LayerVector({
       source: lineSource,
       style: new Style({
-        fill: new Fill({ color: '#00FF00', weight: 4 }),
-        stroke: new Stroke({ color: '#00FF00', width: 2 })
+        fill: new Fill({ color:  rainbow(numOfSteps, step+1), weight: 4 }),
+        stroke: new Stroke({ color:  rainbow(numOfSteps, step+1), width: 2 })
       })
     }));
     
@@ -133,7 +133,9 @@ export default class SARMap extends React.Component {
 
   componentDidMount() {
     var transformedMarkers = this.transformMarkers(this.props.markers);
-    MARKER_LAYERS = this.addMarkersLayer(transformedMarkers[0]);
+    for (var i=0; i<transformedMarkers.length; i++) {
+      MARKER_LAYERS.push(...this.addMarkersLayer(transformedMarkers[i], transformedMarkers.length * 2, i*2));
+    }
 
     this.setState(() => ({
       map: this.createNewMap()
@@ -151,7 +153,9 @@ export default class SARMap extends React.Component {
     if (this.state.map != null) {
       var layers = [];
       layers.push(DEFAULT_LAYER);
-      layers.push(...this.addMarkersLayer(transformedMarkers[0]));
+      for (var i=0; i<transformedMarkers.length; i++) {
+        layers.push(...this.addMarkersLayer(transformedMarkers[i], transformedMarkers.length * 2, i*2));
+      }
       var layerGroup = new LayerGroup({
         name: 'layerGroup',
         layers: layers
@@ -186,7 +190,6 @@ export default class SARMap extends React.Component {
         }
         prev = current;
       }
-      console.log(temp);
       filteredPoints.push(temp);
     }
 
