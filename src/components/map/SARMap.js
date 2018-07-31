@@ -79,7 +79,6 @@ export default class SARMap extends React.Component {
         var marker = current[j];
         temp.push(transform([marker.longitude, marker.latitude], 'EPSG:4326', 'EPSG:3857'))
       }
-
       transformedMarkers.push(temp);
     }
     return transformedMarkers;
@@ -136,6 +135,8 @@ export default class SARMap extends React.Component {
     for (var i=0; i<transformedMarkers.length; i++) {
       MARKER_LAYERS.push(...this.addMarkersLayer(transformedMarkers[i], transformedMarkers.length * 2, i*2));
     }
+
+    console.log(transformedMarkers);
 
     this.setState(() => ({
       map: this.createNewMap()

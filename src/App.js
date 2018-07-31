@@ -39,9 +39,25 @@ class App extends Component {
         markersList.push(response[i]);
       }
 
-      currentComponent.setState({
-        markers: [...currentComponent.state.markers, markersList]
-      });
+      API.getSearchTrack(4, 4).then(function(response) {
+        var markersList_2 = [];
+  
+        for (var i=0; i<response.length; i++) {
+          markersList_2.push(response[i]);
+        }
+
+        var temp = [];
+        temp.push(markersList);
+        temp.push(markersList_2);
+  
+        currentComponent.setState({
+          markers: temp
+        });
+      })
+
+      // currentComponent.setState({
+      //   markers: [...currentComponent.state.markers, markersList]
+      // });
     })
   }
 
