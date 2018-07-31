@@ -10,7 +10,7 @@ import { ScaleLine, defaults as DefaultControls } from 'ol/control';
 import SourceVector from 'ol/source/Vector';
 import LayerVector from 'ol/layer/Vector';
 import { Point, LineString } from 'ol/geom/';
-import { Style, Icon, Fill, Stroke } from 'ol/style/';
+import { Style, Circle, Fill, Stroke } from 'ol/style/';
 
 import { distanceInKmBetweenCoordinates } from '../../functions/LocationFunctions';
 
@@ -83,50 +83,14 @@ export default class SARMap extends React.Component {
     }
     return transformedMarkers;
   }
-  
-  //Takes transformed markers
-  createMarkersFeature(markers) {
-    var markerSource = this.state.markerSource;
-    for (var i=0; i<markers.length; i++) {
-      var point = markers[i];
-      var iconFeature = new Feature({
-        geometry: new Point(point),
-        name: 'Marker ' + marker.id
-      });
-      markerSource.addFeature(iconFeature);
-    }
-    
-    //create the style for the markers
-    var iconStyle = new Style({
-      image: new Icon(/** @type {olx.style.IconOptions} */ ({
-        anchor: [0.5, 46],
-        anchorXUnits: 'fraction',
-        anchorYUnits: 'pixels',
-        opacity: 1,
-        src: marker
-      }))
-    });
 
-    //Marker vector layer
-    var markerLayer = new LayerVector({
-      source: markerSource,
-      style: iconStyle
-    });
-
-    return markerLayer;
-  }
-
-  //Takes transformed markers
-  createLineFeature(markers) {
-    var lineSource = this.state.lineSource;
-    lineSource.clear();
-    var featureLine = new Feature({
-      geometry: new LineString(markers)
-    });
-
-    lineSource.addFeature(featureLine);
-  }
-
+  /**
+   * When given an array of markers, it generates two layers 
+   * 1 - Markers
+   * 2 - Line segments connecting the markers
+   * 
+   * @param {Array} markers 
+   */
   addMarkersLayer(markers) {
     var layerArray = [];
     var markerSource = new SourceVector({});
@@ -141,13 +105,12 @@ export default class SARMap extends React.Component {
     layerArray.push(new LayerVector({
       source: markerSource,
       style: new Style({
-        image: new Icon(/** @type {olx.style.IconOptions} */ ({
-          anchor: [0.5, 46],
-          anchorXUnits: 'fraction',
-          anchorYUnits: 'pixels',
-          opacity: 1,
-          src: marker
-        }))
+        image: new Circle({
+          radius: 8,
+          fill: new Fill({
+            color: 'blue'
+          })
+        })
       })
     }));
 
@@ -174,19 +137,16 @@ export default class SARMap extends React.Component {
 
     var transformedMarkers = this.transformMarkers(this.props.markers);
     this.addMarkersLayer(transformedMarkers[0]);
-    // this.createLineFeature(transformedMarkers[0]);
   }
 
   componentWillUpdate() {
+    var transformedMarkers = [];
     if (!this.props.filterPoints) {
-      var transformedMarkers = this.transformMarkers(this.filterPoints(this.props.markers));
-      this.updateMarkers(transformedMarkers);
-      this.createLineFeature(transformedMarkers);
+      transformedMarkers = this.transformMarkers(this.filterPoints(this.props.markers));
     } else {
-      var transformedMarkers = this.transformMarkers(this.props.markers);
-      this.updateMarkers(transformedMarkers);
-      this.createLineFeature(transformedMarkers);
+      transformedMarkers = this.transformMarkers(this.props.markers);
     }
+    this.addMarkersLayer(transformedMarkers[0]);
   }
 
   updateMarkers(markers) {
