@@ -17,6 +17,7 @@ import { rainbow } from '../../functions/ColorGenerator';
 
 const MAX_SPEED = 80; // 100 km/h
 const MAX_ACCURACY = 100; // 100m
+const VISIBILITY = 50;
 
 const DEFAULT_LAYER = new TileLayer({
   source: new XYZ({
@@ -93,6 +94,25 @@ export default class SARMap extends React.Component {
    */
   addMarkersLayer(markers, numOfSteps, step) {
     var layerArray = [];
+
+    var lineSource = new SourceVector({});
+    var featureLine = new Feature({
+      geometry: new LineString(markers)
+    });
+    lineSource.addFeature(featureLine);
+
+    var colorArray = rainbow(numOfSteps, step);
+    var lineColor = 'rgba(' + colorArray[0] + ',' + colorArray[1] + ',' + colorArray[2] + ',0.6)';
+    layerArray.push(new LayerVector({
+      source: lineSource,
+      style: new Style({
+        stroke: new Stroke({
+          color: lineColor,
+          width: this.state.map == null ? 2 : VISIBILITY / this.state.map.getView().getResolution()
+        })
+      })
+    }));
+
     var markerSource = new SourceVector({});
     for (var i=0; i<markers.length; i++) {
       var point = markers[i];
@@ -102,28 +122,21 @@ export default class SARMap extends React.Component {
       });
       markerSource.addFeature(iconFeature);
     }
+
+    colorArray = rainbow(numOfSteps, step+1);
+    lineColor = 'rgba(' + colorArray[0] + ',' + colorArray[1] + ',' + colorArray[2] + ',0.6)';
+
     layerArray.push(new LayerVector({
+      id: 'markers',
       source: markerSource,
       style: new Style({
         image: new Circle({
           radius: 8,
           fill: new Fill({
-            color: rainbow(numOfSteps, step)
-          })
+            color: lineColor
+          }),
+          opacity: 0.7
         })
-      })
-    }));
-
-    var lineSource = new SourceVector({});
-    var featureLine = new Feature({
-      geometry: new LineString(markers)
-    });
-    lineSource.addFeature(featureLine);
-    layerArray.push(new LayerVector({
-      source: lineSource,
-      style: new Style({
-        fill: new Fill({ color:  rainbow(numOfSteps, step+1), weight: 4 }),
-        stroke: new Stroke({ color:  rainbow(numOfSteps, step+1), width: 2 })
       })
     }));
     
@@ -135,12 +148,25 @@ export default class SARMap extends React.Component {
     for (var i=0; i<transformedMarkers.length; i++) {
       MARKER_LAYERS.push(...this.addMarkersLayer(transformedMarkers[i], transformedMarkers.length * 2, i*2));
     }
-
-    console.log(transformedMarkers);
-
-    this.setState(() => ({
+    this.setState({
       map: this.createNewMap()
-    }));
+    }, () => {
+      /**
+       * This block of code dynamically updates the stroke width of the line layers to be 50m wide
+       */
+      var currentComponent = this; 
+      this.state.map.getView().on('propertychange', function(e) {
+        switch (e.key) {
+          case 'resolution':
+            currentComponent.state.map.getLayers().forEach((layer) => {
+              if (layer.type == 'VECTOR' && layer.values_.id != 'markers') {
+                layer.style_.stroke_.width_ = VISIBILITY / e.oldValue;
+              }
+            });
+            break;
+        }
+      });
+    })
   }
 
   componentWillUpdate() {

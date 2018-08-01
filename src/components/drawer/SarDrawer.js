@@ -9,6 +9,7 @@ import Typography from '@material-ui/core/Typography';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import Checkbox from '@material-ui/core/Checkbox';
+import Button from '@material-ui/core/Button';
 
 import SARMap from '../map/SARMap';
 
@@ -103,6 +104,11 @@ class SarDrawer extends React.Component {
               checked={this.state.filterPoints}
             />
             <ListItemText primary="Filter Points" />
+          </ListItem>
+          <ListItem>
+            <Button color="primary" className={classes.button}>
+              Primary
+            </Button>
           </ListItem>
         </List>
       </Drawer>

@@ -16,6 +16,11 @@ export function rainbow(numOfSteps, step) {
         case 4: r = f; g = 0; b = 1; break;
         case 5: r = 1; g = 0; b = q; break;
     }
-    var c = "#" + ("00" + (~ ~(r * 255)).toString(16)).slice(-2) + ("00" + (~ ~(g * 255)).toString(16)).slice(-2) + ("00" + (~ ~(b * 255)).toString(16)).slice(-2);
-    return (c);
+    // var c = "#" + ("00" + (~ ~(r * 255)).toString(16)).slice(-2) + ("00" + (~ ~(g * 255)).toString(16)).slice(-2) + ("00" + (~ ~(b * 255)).toString(16)).slice(-2);
+    // return (c);
+    var rgb = [];
+    rgb.push(r * 255);
+    rgb.push(g * 255);
+    rgb.push(b * 255);
+    return rgb;
 }
