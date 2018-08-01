@@ -8,11 +8,9 @@ import Toolbar from '@material-ui/core/Toolbar';
 import List from '@material-ui/core/List';
 import Typography from '@material-ui/core/Typography';
 import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import Checkbox from '@material-ui/core/Checkbox';
 import TextField from '@material-ui/core/TextField';
-import Divider from '@material-ui/core/Divider';
 import InputAdornment from '@material-ui/core/InputAdornment';
+import Button from '@material-ui/core/Button';
 
 import SARMap from '../map/SARMap';
 
@@ -49,25 +47,19 @@ const styles = theme => ({
   toolbar: theme.mixins.toolbar,
 });
 
+var maxaccuracy = 100, maxspeed = 80, visibility = 50;
+
 class SarDrawer extends React.Component {
+  // handleChange = name => event => {
+  //   this.setState({
+  //     [name]: event.target.value,
+  //   });
+  // };
   state = {
-    filterPoints: false,
     maxaccuracy: 100,
     maxspeed: 80,
     visibility: 50
   }
-
-  handleCheckboxChange = (name) => (event, checked) => {
-    this.setState((state) => {
-      return { [name]: !state[name]};
-    })
-  }
-
-  handleChange = name => event => {
-    this.setState({
-      [name]: event.target.value,
-    });
-  };
 
   static propTypes = {
     title: PropTypes.string.isRequired,
@@ -99,6 +91,14 @@ class SarDrawer extends React.Component {
     })
   }
 
+  updateValues = () => {
+    this.setState({
+      maxaccuracy: Number(maxaccuracy),
+      maxspeed: Number(maxspeed),
+      visibility: Number(visibility)
+    });
+  }
+
   render() {
     const { classes, markers, title } = this.props;
 
@@ -119,15 +119,6 @@ class SarDrawer extends React.Component {
       >
         <div className={classes.toolbar} />
         <List>
-          <ListItem button onClick={this.handleCheckboxChange('filterPoints')}>
-            <Checkbox
-              checked={this.state.filterPoints}
-            />
-            <ListItemText primary="Filter Points" />
-          </ListItem>
-        </List>
-        <Divider />
-        <List>
           <ListItem>
             <TextField
               id="accuracy"
@@ -135,7 +126,7 @@ class SarDrawer extends React.Component {
               className={classes.textField}
               defaultValue="100"
               margin="normal" 
-              onChange={this.handleChange('maxaccuracy')}
+              onChange={(event) => {maxaccuracy = event.target.value}}
               InputProps={{
                 startAdornment: <InputAdornment position="start">m</InputAdornment>,
               }}/>
@@ -146,7 +137,7 @@ class SarDrawer extends React.Component {
               className={classes.textField}
               defaultValue="80"
               margin="normal" 
-              onChange={this.handleChange('maxspeed')}
+              onChange={(event) => {maxspeed = event.target.value}}
               InputProps={{
                 startAdornment: <InputAdornment position="start">km/h</InputAdornment>,
               }}/>
@@ -158,19 +149,23 @@ class SarDrawer extends React.Component {
               className={classes.textField}
               defaultValue="50"
               margin="normal" 
-              onChange={this.handleChange('visibility')}
+              onChange={(event) => {visibility = event.target.value}}
               InputProps={{
                 startAdornment: <InputAdornment position="start">m</InputAdornment>,
               }}/>
+          </ListItem>
+          <ListItem>
+            <Button variant="contained" color="primary" className={classes.button} onClick={() => {this.updateValues()}}>
+              Update Values
+            </Button>
           </ListItem>
         </List>
       </Drawer>
       <main className={classes.content}>
         <div className={classes.toolbar} />
         <SARMap 
-          filterPoints={this.state.filterPoints} 
           markers={markers} 
-          maxaccuracy={this.state.accuracy} 
+          maxaccuracy={this.state.maxaccuracy} 
           maxspeed={this.state.maxspeed}
           visibility={this.state.visibility}
         />

@@ -156,7 +156,7 @@ export default class SARMap extends React.Component {
   }
 
   componentDidMount() {
-    var transformedMarkers = this.transformMarkers(this.props.markers);
+    var transformedMarkers = this.transformMarkers((this.props.markers));
     for (var i=0; i<transformedMarkers.length; i++) {
       MARKER_LAYERS.push(...this.addMarkersLayer(transformedMarkers[i], transformedMarkers.length * 2, i*2)); //For each array of markers, create their own markers and line layer
     }
@@ -185,12 +185,7 @@ export default class SARMap extends React.Component {
   }
 
   componentWillUpdate() {
-    var transformedMarkers = [];
-    if (!this.props.filterPoints) {
-      transformedMarkers = this.transformMarkers(this.filterPoints(this.props.markers));
-    } else {
-      transformedMarkers = this.transformMarkers(this.props.markers);
-    }
+    var transformedMarkers = this.transformMarkers(this.filterPoints(this.props.markers));
 
     /**
      * Remove all the layers from the map, then add the new filtered layers ontop
@@ -225,7 +220,7 @@ export default class SARMap extends React.Component {
   
         if (current.accuracy <= this.props.maxaccuracy) {
           if (prev != null) {
-            var distance = Math.abs(distanceInKmBetweenCoordinates(prev.latitude,prev.longitude, current.latitude, current.longitude));
+            var distance = Math.abs(distanceInKmBetweenCoordinates(prev.latitude, prev.longitude, current.latitude, current.longitude));
             
             var currentTime = new Date(current.timestamp);
             var prevTime = new Date(prev.timestamp);
@@ -234,7 +229,7 @@ export default class SARMap extends React.Component {
   
             if (distance/timeDifference < this.props.maxspeed) {
               temp.push(current);
-            }
+            } 
           }
         }
         prev = current;
