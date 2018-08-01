@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+
 import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import AppBar from '@material-ui/core/AppBar';
@@ -9,7 +10,9 @@ import Typography from '@material-ui/core/Typography';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import Checkbox from '@material-ui/core/Checkbox';
-import Button from '@material-ui/core/Button';
+import TextField from '@material-ui/core/TextField';
+import Divider from '@material-ui/core/Divider';
+import InputAdornment from '@material-ui/core/InputAdornment';
 
 import SARMap from '../map/SARMap';
 
@@ -35,19 +38,36 @@ const styles = theme => ({
     flexGrow: 1,
     backgroundColor: theme.palette.background.default,
   },
+  textField: {
+    marginLeft: theme.spacing.unit,
+    marginRight: theme.spacing.unit,
+    width: 200,
+  },
+  button: {
+    margin: theme.spacing.unit,
+  },
   toolbar: theme.mixins.toolbar,
 });
 
 class SarDrawer extends React.Component {
   state = {
     filterPoints: false,
+    maxaccuracy: 100,
+    maxspeed: 80,
+    visibility: 50
   }
 
-  handleChange = (name) => (event, checked) => {
+  handleCheckboxChange = (name) => (event, checked) => {
     this.setState((state) => {
       return { [name]: !state[name]};
     })
   }
+
+  handleChange = name => event => {
+    this.setState({
+      [name]: event.target.value,
+    });
+  };
 
   static propTypes = {
     title: PropTypes.string.isRequired,
@@ -99,22 +119,61 @@ class SarDrawer extends React.Component {
       >
         <div className={classes.toolbar} />
         <List>
-          <ListItem button onClick={this.handleChange('filterPoints')}>
+          <ListItem button onClick={this.handleCheckboxChange('filterPoints')}>
             <Checkbox
               checked={this.state.filterPoints}
             />
             <ListItemText primary="Filter Points" />
           </ListItem>
+        </List>
+        <Divider />
+        <List>
           <ListItem>
-            <Button color="primary" className={classes.button}>
-              Primary
-            </Button>
+            <TextField
+              id="accuracy"
+              label="Accuracy"
+              className={classes.textField}
+              defaultValue="100"
+              margin="normal" 
+              onChange={this.handleChange('maxaccuracy')}
+              InputProps={{
+                startAdornment: <InputAdornment position="start">m</InputAdornment>,
+              }}/>
+
+            <TextField
+              id="maxspeed"
+              label="Max Speed"
+              className={classes.textField}
+              defaultValue="80"
+              margin="normal" 
+              onChange={this.handleChange('maxspeed')}
+              InputProps={{
+                startAdornment: <InputAdornment position="start">km/h</InputAdornment>,
+              }}/>
+          </ListItem>
+          <ListItem>
+            <TextField
+              id="visibility"
+              label="Visibility"
+              className={classes.textField}
+              defaultValue="50"
+              margin="normal" 
+              onChange={this.handleChange('visibility')}
+              InputProps={{
+                startAdornment: <InputAdornment position="start">m</InputAdornment>,
+              }}/>
           </ListItem>
         </List>
       </Drawer>
       <main className={classes.content}>
         <div className={classes.toolbar} />
-        <SARMap filterPoints={this.state.filterPoints} markers={markers} />
+        <SARMap 
+          filterPoints={this.state.filterPoints} 
+          markers={markers} 
+          maxaccuracy={this.state.accuracy} 
+          maxspeed={this.state.maxspeed}
+          visibility={this.state.visibility}
+        />
       </main>
     </div>
     );

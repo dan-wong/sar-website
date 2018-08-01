@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 
 import { Map, View, Feature } from 'ol';
 import TileLayer from 'ol/layer/Tile';
-import { Group as LayerGroup } from 'ol/layer.js';
+import { Group as LayerGroup } from 'ol/layer';
 import XYZ from 'ol/source/XYZ';
 import { transform } from 'ol/proj';
 import { ScaleLine, defaults as DefaultControls } from 'ol/control';
@@ -15,28 +15,37 @@ import { Style, Circle, Fill, Stroke } from 'ol/style/';
 import { distanceInKmBetweenCoordinates } from '../../functions/LocationFunctions';
 import { rainbow } from '../../functions/ColorGenerator';
 
-const MAX_SPEED = 80; // 100 km/h
-const MAX_ACCURACY = 100; // 100m
-const VISIBILITY = 50;
-
+/**
+ * This layer is the topographic layer provided by LINZ
+ */
 const DEFAULT_LAYER = new TileLayer({
   source: new XYZ({
     url: 'http://tiles-{a-d}.data-cdn.linz.govt.nz/services;key=877beb090a4e4fab8c6ea96aefab3526/tiles/v4/layer=50767/EPSG:3857/{z}/{x}/{y}.png', //50767
   })
 });
+
+/**
+ * This holds the vector layers displayed ontop of the topographic map layer
+ */
 var MARKER_LAYERS = [];
 
 export default class SARMap extends React.Component {
   static propTypes = {
     markers: PropTypes.array, //Array of arrays
     zoom: PropTypes.number,
-    center: PropTypes.object
+    center: PropTypes.object,
+    maxaccuracy: PropTypes.number,
+    maxspeed: PropTypes.number,
+    visibility: PropTypes.number
   }
   
   static defaultProps = {
     markers: [],
     zoom: 12,
-    center: { lat: -36.852329, lng: 174.769116 }
+    center: { lat: -36.852329, lng: 174.769116 },
+    maxaccuracy: 100,
+    maxspeed: 80,
+    visibility: 50
   }
 
   constructor(props) {
@@ -50,10 +59,7 @@ export default class SARMap extends React.Component {
     return new Map({
       layers: [
         DEFAULT_LAYER,
-        new LayerGroup({
-          name: 'layerGroup',
-          layers: MARKER_LAYERS
-        }),
+        ...MARKER_LAYERS //Place all the layers in the list into the map (... notation)
       ],
       target: 'map',
       view: new View({
@@ -70,6 +76,10 @@ export default class SARMap extends React.Component {
     });
   }
 
+  /**
+   * Transform markers in {lat, lng, timestamp} into {lng, lat} format of openmaps
+   * @param {Array} markers 
+   */
   transformMarkers(markers) {
     var transformedMarkers = [];
     for (var i=0; i<markers.length; i++) {
@@ -87,8 +97,10 @@ export default class SARMap extends React.Component {
 
   /**
    * When given an array of markers, it generates two layers 
-   * 1 - Markers
-   * 2 - Line segments connecting the markers
+   * 1 - Line segments connecting the markers
+   * 2 - Markers
+   * 
+   * It is in this order so that the markers are ONTOP of the line
    * 
    * @param {Array} markers 
    */
@@ -102,13 +114,13 @@ export default class SARMap extends React.Component {
     lineSource.addFeature(featureLine);
 
     var colorArray = rainbow(numOfSteps, step);
-    var lineColor = 'rgba(' + colorArray[0] + ',' + colorArray[1] + ',' + colorArray[2] + ',0.6)';
+    var lineColor = 'rgba(' + colorArray[0] + ',' + colorArray[1] + ',' + colorArray[2] + ', 0.6)'; //Generate a random color with opacity 0.6
     layerArray.push(new LayerVector({
       source: lineSource,
       style: new Style({
         stroke: new Stroke({
           color: lineColor,
-          width: this.state.map == null ? 2 : VISIBILITY / this.state.map.getView().getResolution()
+          width: this.state.map == null ? 2 : this.props.visibility / this.state.map.getView().getResolution() //Use the scale to calculate the width of 50m
         })
       })
     }));
@@ -124,7 +136,7 @@ export default class SARMap extends React.Component {
     }
 
     colorArray = rainbow(numOfSteps, step+1);
-    lineColor = 'rgba(' + colorArray[0] + ',' + colorArray[1] + ',' + colorArray[2] + ',0.6)';
+    lineColor = 'rgba(' + colorArray[0] + ',' + colorArray[1] + ',' + colorArray[2] + ', 0.75)'; //Generate a random color with opacity 0.75
 
     layerArray.push(new LayerVector({
       id: 'markers',
@@ -146,27 +158,30 @@ export default class SARMap extends React.Component {
   componentDidMount() {
     var transformedMarkers = this.transformMarkers(this.props.markers);
     for (var i=0; i<transformedMarkers.length; i++) {
-      MARKER_LAYERS.push(...this.addMarkersLayer(transformedMarkers[i], transformedMarkers.length * 2, i*2));
+      MARKER_LAYERS.push(...this.addMarkersLayer(transformedMarkers[i], transformedMarkers.length * 2, i*2)); //For each array of markers, create their own markers and line layer
     }
+
+    var map = this.createNewMap();
+
+    /**
+     * This block of code dynamically updates the stroke width of the line layers to be 50m wide
+     */
+    var currentComponent = this;
+    map.getView().on('propertychange', function(e) {
+      switch (e.key) {
+        case 'resolution':
+          map.getLayers().forEach((layer) => {
+            if (layer.type === 'VECTOR' && layer.values_.id !== 'markers') { //Check if its the topographic layer or if its the markers layer
+              layer.style_.stroke_.width_ = currentComponent.props.visibility / e.oldValue;
+            }
+          });
+          break;
+      }
+    });
+
     this.setState({
-      map: this.createNewMap()
-    }, () => {
-      /**
-       * This block of code dynamically updates the stroke width of the line layers to be 50m wide
-       */
-      var currentComponent = this; 
-      this.state.map.getView().on('propertychange', function(e) {
-        switch (e.key) {
-          case 'resolution':
-            currentComponent.state.map.getLayers().forEach((layer) => {
-              if (layer.type == 'VECTOR' && layer.values_.id != 'markers') {
-                layer.style_.stroke_.width_ = VISIBILITY / e.oldValue;
-              }
-            });
-            break;
-        }
-      });
-    })
+      map: map
+    });
   }
 
   componentWillUpdate() {
@@ -177,6 +192,9 @@ export default class SARMap extends React.Component {
       transformedMarkers = this.transformMarkers(this.props.markers);
     }
 
+    /**
+     * Remove all the layers from the map, then add the new filtered layers ontop
+     */
     if (this.state.map != null) {
       var layers = [];
       layers.push(DEFAULT_LAYER);
@@ -191,6 +209,10 @@ export default class SARMap extends React.Component {
     }
   }
 
+  /**
+   * Filter points that do not meet the accuracy and speed criteria
+   * @param {Array} markers 
+   */
   filterPoints(markers) {
     var filteredPoints = [];
     
@@ -201,7 +223,7 @@ export default class SARMap extends React.Component {
       for (var j=0; j<currentListOfMarkers.length; j++) {
         var current = currentListOfMarkers[j];
   
-        if (current.accuracy <= MAX_ACCURACY) {
+        if (current.accuracy <= this.props.maxaccuracy) {
           if (prev != null) {
             var distance = Math.abs(distanceInKmBetweenCoordinates(prev.latitude,prev.longitude, current.latitude, current.longitude));
             
@@ -210,7 +232,7 @@ export default class SARMap extends React.Component {
   
             var timeDifference = (currentTime - prevTime) / 3600000; //In hrs
   
-            if (distance/timeDifference < MAX_SPEED) {
+            if (distance/timeDifference < this.props.maxspeed) {
               temp.push(current);
             }
           }
