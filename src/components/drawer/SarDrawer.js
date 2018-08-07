@@ -11,6 +11,7 @@ import ListItem from '@material-ui/core/ListItem';
 import TextField from '@material-ui/core/TextField';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import Button from '@material-ui/core/Button';
+import Slider from '@material-ui/lab/Slider';
 
 import SARMap from '../map/SARMap';
 
@@ -58,7 +59,8 @@ class SarDrawer extends React.Component {
   state = {
     maxaccuracy: 100,
     maxspeed: 80,
-    visibility: 50
+    visibility: 50,
+    value: 100,
   }
 
   static propTypes = {
@@ -99,6 +101,10 @@ class SarDrawer extends React.Component {
     });
   }
 
+  handleChange = (event, value) => {
+    this.setState({ value });
+  };
+
   render() {
     const { classes, markers, title } = this.props;
 
@@ -119,6 +125,9 @@ class SarDrawer extends React.Component {
       >
         <div className={classes.toolbar} />
         <List>
+          <ListItem>
+            <Slider value={this.state.value} aria-labelledby="label" onChange={this.handleChange} />
+          </ListItem>
           <ListItem>
             <TextField
               id="accuracy"
@@ -168,6 +177,7 @@ class SarDrawer extends React.Component {
           maxaccuracy={this.state.maxaccuracy} 
           maxspeed={this.state.maxspeed}
           visibility={this.state.visibility}
+          sliderValue={this.state.value}
         />
       </main>
     </div>

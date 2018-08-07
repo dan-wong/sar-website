@@ -5,13 +5,15 @@ import { Map, View, Feature } from 'ol';
 import TileLayer from 'ol/layer/Tile';
 import OSM from 'ol/source/OSM';
 import { Group as LayerGroup } from 'ol/layer';
-import XYZ from 'ol/source/XYZ';
+// import XYZ from 'ol/source/XYZ';
 import { transform } from 'ol/proj';
 import { ScaleLine, defaults as DefaultControls } from 'ol/control';
 import SourceVector from 'ol/source/Vector';
 import LayerVector from 'ol/layer/Vector';
 import { Point, LineString } from 'ol/geom/';
 import { Style, Circle, Fill, Stroke } from 'ol/style/';
+
+import moment from 'moment';
 
 import { distanceInKmBetweenCoordinates } from '../../functions/LocationFunctions';
 import { rainbow } from '../../functions/ColorGenerator';
@@ -41,7 +43,8 @@ export default class SARMap extends React.Component {
     center: PropTypes.object,
     maxaccuracy: PropTypes.number,
     maxspeed: PropTypes.number,
-    visibility: PropTypes.number
+    visibility: PropTypes.number,
+    sliderValue: PropTypes.number
   }
   
   static defaultProps = {
@@ -50,7 +53,8 @@ export default class SARMap extends React.Component {
     center: { lat: -36.852329, lng: 174.769116 },
     maxaccuracy: 100,
     maxspeed: 80,
-    visibility: 50
+    visibility: 50,
+    sliderValue: 100
   }
 
   constructor(props) {
@@ -120,6 +124,7 @@ export default class SARMap extends React.Component {
 
     var colorArray = rainbow(numOfSteps, step);
     var lineColor = 'rgba(' + colorArray[0] + ',' + colorArray[1] + ',' + colorArray[2] + ', 0.6)'; //Generate a random color with opacity 0.6
+    // Visibility Line
     layerArray.push(new LayerVector({
       source: lineSource,
       style: new Style({
@@ -133,9 +138,12 @@ export default class SARMap extends React.Component {
     var markerSource = new SourceVector({});
     for (var i=0; i<markers.length; i++) {
       var point = markers[i];
+
+      var transformedMarker = transform([point[0], point[1]], 'EPSG:3857', 'EPSG:4326');
+
       var iconFeature = new Feature({
         geometry: new Point(point),
-        name: 'Marker ' + point.id
+        name: transformedMarker[1] + ', ' + transformedMarker[0]
       });
       markerSource.addFeature(iconFeature);
     }
@@ -143,6 +151,7 @@ export default class SARMap extends React.Component {
     colorArray = rainbow(numOfSteps, step+1);
     var markerColor = 'rgba(' + colorArray[0] + ',' + colorArray[1] + ',' + colorArray[2] + ', 0.75)'; //Generate a random color with opacity 0.75
 
+    // Marker Line
     layerArray.push(new LayerVector({
       id: 'marker-line',
       source: lineSource,
@@ -154,6 +163,7 @@ export default class SARMap extends React.Component {
       })
     }));
 
+    // Markers
     layerArray.push(new LayerVector({
       id: 'markers',
       source: markerSource,
@@ -172,7 +182,9 @@ export default class SARMap extends React.Component {
   }
 
   componentDidMount() {
-    var transformedMarkers = this.transformMarkers((this.props.markers));
+    var { markers } = this.props;
+    var eventFilteredMarkers = this.filterNumberOfEvents(markers, this.calculateNumberOfEventsFromSlider(markers));
+    var transformedMarkers = this.transformMarkers(this.filterPoints(eventFilteredMarkers));
     for (var i=0; i<transformedMarkers.length; i++) {
       MARKER_LAYERS.push(...this.addMarkersLayer(transformedMarkers[i], transformedMarkers.length * 2, i*2)); //For each array of markers, create their own markers and line layer
     }
@@ -201,7 +213,9 @@ export default class SARMap extends React.Component {
   }
 
   componentWillUpdate() {
-    var transformedMarkers = this.transformMarkers(this.filterPoints(this.props.markers));
+    var { markers } = this.props;
+    var eventFilteredMarkers = this.filterNumberOfEvents(markers, this.calculateNumberOfEventsFromSlider(markers));
+    var transformedMarkers = this.transformMarkers(this.filterPoints(eventFilteredMarkers));
 
     /**
      * Remove all the layers from the map, then add the new filtered layers ontop
@@ -218,6 +232,35 @@ export default class SARMap extends React.Component {
       });
       this.state.map.setLayerGroup(layerGroup);
     }
+  }
+
+  calculateNumberOfEventsFromSlider(markers) {
+    var { sliderValue } = this.props;
+    var totalNumberOfEvents = 0;
+    for (var i=0; i<markers.length; i++) {
+      totalNumberOfEvents += markers[i].length;
+    }
+    return Math.ceil(totalNumberOfEvents/100*sliderValue);
+  }
+
+  filterNumberOfEvents(markers, eventLimit) {
+    var filteredPoints = [];
+    var count = 0;
+    
+    for (var i=0; i<markers.length; i++) {
+      var currentListOfMarkers = markers[i];
+      var temp = [];
+      for (var j=0; j<currentListOfMarkers.length; j++) {
+        var current = currentListOfMarkers[j];
+        if (count <= eventLimit) {
+          temp.push(current);
+          count++;
+        }
+      }
+      filteredPoints.push(temp);
+    }
+
+    return filteredPoints;
   }
 
   /**

@@ -32,32 +32,47 @@ class App extends Component {
     }
 
     let currentComponent = this;
-    API.getSearchTrack(personID, groupID).then(function(response) {
+    // API.getSearchTrack(personID, groupID).then(function(response) {
+    //   var markersList = [];
+
+    //   for (var i=0; i<response.length; i++) {
+    //     markersList.push(response[i]);
+    //   }
+
+    //   API.getSearchTrack(1, 5).then(function(response) {
+    //     var markersList_2 = [];
+  
+    //     for (var i=0; i<response.length; i++) {
+    //       markersList_2.push(response[i]);
+    //     }
+
+    //     var temp = [];
+    //     temp.push(markersList);
+    //     temp.push(markersList_2);
+  
+    //     currentComponent.setState({
+    //       markers: temp
+    //     });
+    //   })
+
+    //   // currentComponent.setState({
+    //   //   markers: [...currentComponent.state.markers, markersList]
+    //   // });
+    // })
+
+    API.getSearchTrack(1, 5).then(function(response) {
       var markersList = [];
 
       for (var i=0; i<response.length; i++) {
         markersList.push(response[i]);
       }
 
-      API.getSearchTrack(1, 5).then(function(response) {
-        var markersList_2 = [];
-  
-        for (var i=0; i<response.length; i++) {
-          markersList_2.push(response[i]);
-        }
+      var temp = [];
+      temp.push(markersList);
 
-        var temp = [];
-        temp.push(markersList);
-        temp.push(markersList_2);
-  
-        currentComponent.setState({
-          markers: temp
-        });
-      })
-
-      // currentComponent.setState({
-      //   markers: [...currentComponent.state.markers, markersList]
-      // });
+      currentComponent.setState({
+        markers: temp
+      });
     })
   }
 
