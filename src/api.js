@@ -13,5 +13,11 @@ export default {
             .then(response => {
                 return response.data.events;
             });
+    }, 
+    getGroupsInSearch(searchID) {
+        return axios.get(`https://c44r10nquk.execute-api.ap-southeast-2.amazonaws.com/test/sarFunction?type=group&searchId=${searchID}`, config)
+            .then(response => {
+                return response.data.groups;
+            });
     }
 }

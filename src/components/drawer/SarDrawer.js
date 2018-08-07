@@ -12,10 +12,12 @@ import TextField from '@material-ui/core/TextField';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import Button from '@material-ui/core/Button';
 import Slider from '@material-ui/lab/Slider';
+import ListItemText from '@material-ui/core/ListItemText';
+import Checkbox from '@material-ui/core/Checkbox';
 
 import SARMap from '../map/SARMap';
 
-const drawerWidth = 240;
+const drawerWidth = 300;
 
 const styles = theme => ({
   root: {
@@ -51,11 +53,6 @@ const styles = theme => ({
 var maxaccuracy = 100, maxspeed = 80, visibility = 50;
 
 class SarDrawer extends React.Component {
-  // handleChange = name => event => {
-  //   this.setState({
-  //     [name]: event.target.value,
-  //   });
-  // };
   state = {
     maxaccuracy: 100,
     maxspeed: 80,
@@ -66,6 +63,7 @@ class SarDrawer extends React.Component {
   static propTypes = {
     title: PropTypes.string.isRequired,
     markers: PropTypes.array,
+    groups: PropTypes.array
   }
 
   static defaultProps = {
@@ -107,6 +105,15 @@ class SarDrawer extends React.Component {
 
   render() {
     const { classes, markers, title } = this.props;
+
+    const groups = this.props.groups.map(function(group) {
+      return (
+        <ListItem>
+          <Checkbox />
+          <ListItemText primary={group.name} secondary={`Group ID: ${group.id}`}/>
+        </ListItem>
+      );
+    });
 
     return (
       <div className={classes.root}>
@@ -168,6 +175,7 @@ class SarDrawer extends React.Component {
               Update Values
             </Button>
           </ListItem>
+          {groups}
         </List>
       </Drawer>
       <main className={classes.content}>

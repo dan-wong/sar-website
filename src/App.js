@@ -9,6 +9,7 @@ class App extends Component {
     super(props);
     this.state = {
       markers: [],
+      groups: []
     }
   }
 
@@ -33,53 +34,50 @@ class App extends Component {
 
     let currentComponent = this;
     // API.getSearchTrack(personID, groupID).then(function(response) {
-    //   var markersList = [];
+      // var markersList = [];
 
     //   for (var i=0; i<response.length; i++) {
     //     markersList.push(response[i]);
     //   }
 
-    //   API.getSearchTrack(1, 5).then(function(response) {
-    //     var markersList_2 = [];
-  
-    //     for (var i=0; i<response.length; i++) {
-    //       markersList_2.push(response[i]);
-    //     }
-
-    //     var temp = [];
-    //     temp.push(markersList);
-    //     temp.push(markersList_2);
-  
-    //     currentComponent.setState({
-    //       markers: temp
-    //     });
-    //   })
-
-    //   // currentComponent.setState({
-    //   //   markers: [...currentComponent.state.markers, markersList]
-    //   // });
-    // })
-
-    API.getSearchTrack(1, 5).then(function(response) {
-      var markersList = [];
-
-      for (var i=0; i<response.length; i++) {
-        markersList.push(response[i]);
-      }
-
-      var temp = [];
-      temp.push(markersList);
-
-      currentComponent.setState({
-        markers: temp
+      API.getGroupsInSearch(1).then((response) => {
+        currentComponent.setState({
+          groups: response
+        });
       });
-    })
+
+      // API.getSearchTrack(1, 5).then(function(response) {
+      //   var markersList = [];
+  
+      //   for (var i=0; i<response.length; i++) {
+      //     markersList.push(response[i]);
+      //   }
+
+      //   var temp = [];
+      //   temp.push(markersList);
+  
+      //   currentComponent.setState({
+      //     markers: temp
+      //   });
+      // })
+
+      // currentComponent.setState({
+      //   markers: [...currentComponent.state.markers, markersList]
+      // });
+    // })
   }
 
   render() {
-    if (this.state.markers && this.state.markers.length > 0) {
+    // if (this.state.markers && this.state.markers.length > 0) {
+    //   return (
+    //     <SarDrawer title={"SAR Webservice"} markers={this.state.markers} groups={this.state.groups}/>
+    //   )
+    // } else {
+    //   return (<h1>Loading...</h1>)
+    // }
+    if (this.state.groups && this.state.groups.length > 0) {
       return (
-        <SarDrawer title={"SAR Webservice"} markers={this.state.markers} />
+        <SarDrawer title={"SAR Webservice"} groups={this.state.groups}/>
       )
     } else {
       return (<h1>Loading...</h1>)
