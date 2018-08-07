@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 
 import { Map, View, Feature } from 'ol';
 import TileLayer from 'ol/layer/Tile';
+import OSM from 'ol/source/OSM';
 import { Group as LayerGroup } from 'ol/layer';
 import XYZ from 'ol/source/XYZ';
 import { transform } from 'ol/proj';
@@ -18,11 +19,15 @@ import { rainbow } from '../../functions/ColorGenerator';
 /**
  * This layer is the topographic layer provided by LINZ
  */
+// const DEFAULT_LAYER = new TileLayer({
+//   source: new XYZ({
+//     url: 'http://tiles-{a-d}.data-cdn.linz.govt.nz/services;key=877beb090a4e4fab8c6ea96aefab3526/tiles/v4/layer=50767/EPSG:3857/{z}/{x}/{y}.png', //50767
+//   })
+// });
 const DEFAULT_LAYER = new TileLayer({
-  source: new XYZ({
-    url: 'http://tiles-{a-d}.data-cdn.linz.govt.nz/services;key=877beb090a4e4fab8c6ea96aefab3526/tiles/v4/layer=50767/EPSG:3857/{z}/{x}/{y}.png', //50767
-  })
+  source: new OSM()
 });
+
 
 /**
  * This holds the vector layers displayed ontop of the topographic map layer
@@ -136,7 +141,18 @@ export default class SARMap extends React.Component {
     }
 
     colorArray = rainbow(numOfSteps, step+1);
-    lineColor = 'rgba(' + colorArray[0] + ',' + colorArray[1] + ',' + colorArray[2] + ', 0.75)'; //Generate a random color with opacity 0.75
+    var markerColor = 'rgba(' + colorArray[0] + ',' + colorArray[1] + ',' + colorArray[2] + ', 0.75)'; //Generate a random color with opacity 0.75
+
+    layerArray.push(new LayerVector({
+      id: 'marker-line',
+      source: lineSource,
+      style: new Style({
+        stroke: new Stroke({
+          color: markerColor,
+          width: 3
+        })
+      })
+    }));
 
     layerArray.push(new LayerVector({
       id: 'markers',
@@ -145,7 +161,7 @@ export default class SARMap extends React.Component {
         image: new Circle({
           radius: 8,
           fill: new Fill({
-            color: lineColor
+            color: markerColor
           }),
           opacity: 0.7
         })
@@ -171,7 +187,7 @@ export default class SARMap extends React.Component {
       switch (e.key) {
         case 'resolution':
           map.getLayers().forEach((layer) => {
-            if (layer.type === 'VECTOR' && layer.values_.id !== 'markers') { //Check if its the topographic layer or if its the markers layer
+            if (layer.type === 'VECTOR' && layer.values_.id !== 'markers' && layer.values_.id !== 'marker-line') { //Check if its the topographic layer or if its the markers layer
               layer.style_.stroke_.width_ = currentComponent.props.visibility / e.oldValue;
             }
           });

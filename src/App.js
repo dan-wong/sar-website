@@ -32,14 +32,14 @@ class App extends Component {
     }
 
     let currentComponent = this;
-    API.getSearchTrack(groupID, personID).then(function(response) {
+    API.getSearchTrack(personID, groupID).then(function(response) {
       var markersList = [];
 
       for (var i=0; i<response.length; i++) {
         markersList.push(response[i]);
       }
 
-      API.getSearchTrack(4, 4).then(function(response) {
+      API.getSearchTrack(1, 5).then(function(response) {
         var markersList_2 = [];
   
         for (var i=0; i<response.length; i++) {
