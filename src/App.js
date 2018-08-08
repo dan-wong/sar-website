@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 
-import SARMap from './components/map/SARMap';
+import SarDrawer from './components/drawer/SarDrawer';
 
 import API from './api';
 
@@ -9,6 +9,7 @@ class App extends Component {
     super(props);
     this.state = {
       markers: [],
+      groups: []
     }
   }
 
@@ -31,26 +32,52 @@ class App extends Component {
       personID = 1;
     }
 
-    console.log(groupID + ", " + personID);
     let currentComponent = this;
-    API.getSearchTrack(groupID, personID).then(function(response) {
-      var markersList = [];
+    // API.getSearchTrack(personID, groupID).then(function(response) {
+      // var markersList = [];
 
-      for (var i=0; i<response.length; i++) {
-        markersList.push(response[i]);
-      }
+    //   for (var i=0; i<response.length; i++) {
+    //     markersList.push(response[i]);
+    //   }
 
-      currentComponent.setState({
-        markers: markersList,
+      API.getGroupsInSearch(1).then((response) => {
+        currentComponent.setState({
+          groups: response
+        });
       });
-    })
+
+      // API.getSearchTrack(1, 5).then(function(response) {
+      //   var markersList = [];
+  
+      //   for (var i=0; i<response.length; i++) {
+      //     markersList.push(response[i]);
+      //   }
+
+      //   var temp = [];
+      //   temp.push(markersList);
+  
+      //   currentComponent.setState({
+      //     markers: temp
+      //   });
+      // })
+
+      // currentComponent.setState({
+      //   markers: [...currentComponent.state.markers, markersList]
+      // });
+    // })
   }
 
   render() {
-    if (this.state.markers && this.state.markers.length > 0) {
-      console.log(this.state.markers);
+    // if (this.state.markers && this.state.markers.length > 0) {
+    //   return (
+    //     <SarDrawer title={"SAR Webservice"} markers={this.state.markers} groups={this.state.groups}/>
+    //   )
+    // } else {
+    //   return (<h1>Loading...</h1>)
+    // }
+    if (this.state.groups && this.state.groups.length > 0) {
       return (
-        <SARMap markers={this.state.markers} />
+        <SarDrawer title={"SAR Webservice"} groups={this.state.groups}/>
       )
     } else {
       return (<h1>Loading...</h1>)
