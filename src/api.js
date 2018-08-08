@@ -19,5 +19,17 @@ export default {
             .then(response => {
                 return response.data.groups;
             });
+    },
+    getPeopleInGroup(groupID) {
+        return axios.get(`https://c44r10nquk.execute-api.ap-southeast-2.amazonaws.com/test/sarFunction?type=person&groupId=${groupID}`, config)
+            .then(response => {
+                var persons = response.data.persons;
+                return persons.sort((a, b) => {
+                    if (a.id < b.id) {
+                        return -1;
+                    } 
+                    return 1;
+                });
+            });
     }
 }

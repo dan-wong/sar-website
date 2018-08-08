@@ -17,6 +17,8 @@ import Checkbox from '@material-ui/core/Checkbox';
 
 import SARMap from '../map/SARMap';
 
+import API from '../../api';
+
 const drawerWidth = 300;
 
 const styles = theme => ({
@@ -58,37 +60,15 @@ class SarDrawer extends React.Component {
     maxspeed: 80,
     visibility: 50,
     value: 100,
+    checked: [0],
+    markers: [],
+    cachedMarkers: {},
   }
 
   static propTypes = {
     title: PropTypes.string.isRequired,
-    markers: PropTypes.array,
-    groups: PropTypes.array
-  }
-
-  static defaultProps = {
-    styles: theme => ({
-      root: {
-        flexGrow: 1,
-        height: '100vh',
-        zIndex: 1,
-        overflow: 'hidden',
-        position: 'relative',
-        display: 'flex',
-      },
-      appBar: {
-        zIndex: theme.zIndex.drawer + 1,
-      },
-      drawerPaper: {
-        position: 'relative',
-        width: drawerWidth,
-      },
-      content: {
-        flexGrow: 1,
-        backgroundColor: theme.palette.background.default,
-      },
-      toolbar: theme.mixins.toolbar,
-    })
+    groups: PropTypes.array,
+    groupId: PropTypes.number
   }
 
   updateValues = () => {
@@ -99,18 +79,82 @@ class SarDrawer extends React.Component {
     });
   }
 
+  handleToggle = value => () => {
+    const { checked } = this.state;
+    const currentIndex = checked.indexOf(value);
+    const newChecked = [...checked];
+
+    if (currentIndex === -1) {
+      newChecked.push(value);
+    } else {
+      newChecked.splice(currentIndex, 1);
+    }
+
+    this.setState({
+      checked: newChecked
+    });
+    
+    let currentComponent = this;
+    if (currentIndex === -1) {
+      if (typeof this.state.cachedMarkers[value] != 'undefined') {
+        currentComponent.setState({
+          markers: [...currentComponent.state.markers, currentComponent.state.cachedMarkers[value]]
+        })
+      } else { // Person has not been selected before
+        API.getSearchTrack(value, this.props.groupId).then(function(response) {
+          var markersList = [];
+    
+          for (var i=0; i<response.length; i++) {
+            markersList.push(response[i]);
+          }
+
+          var tempCachedMarkers = currentComponent.state.cachedMarkers;
+          tempCachedMarkers[value] = markersList;
+    
+          currentComponent.setState({
+            markers: [...currentComponent.state.markers, markersList],
+            cachedMarkers: tempCachedMarkers
+          });
+        });
+      }
+    } else {
+      var newMarkers = [];
+      newChecked.forEach((value) => {
+        if (value != 0) {
+          newMarkers.push(currentComponent.state.cachedMarkers[value]);
+        }
+      });
+
+      currentComponent.setState({
+        markers: newMarkers,
+      })
+    }
+  };
+
   handleChange = (event, value) => {
     this.setState({ value });
   };
 
   render() {
-    const { classes, markers, title } = this.props;
+    const { classes, title } = this.props;
+
+    let currentComponent = this;
 
     const groups = this.props.groups.map(function(group) {
       return (
-        <ListItem>
-          <Checkbox />
-          <ListItemText primary={group.name} secondary={`Group ID: ${group.id}`}/>
+        <ListItem
+          key={group.id}
+          role={undefined}
+          dense
+          button
+          onClick={currentComponent.handleToggle(group.id)}
+          className={classes.listItem}
+        >
+          <Checkbox 
+            checked={currentComponent.state.checked.indexOf(group.id) !== -1}
+            disableRipple 
+          />
+          <ListItemText primary={`${group.firstName} ${group.lastName}`} secondary={`Person ID: ${group.id}`}/>
         </ListItem>
       );
     });
@@ -175,13 +219,16 @@ class SarDrawer extends React.Component {
               Update Values
             </Button>
           </ListItem>
+          <ListItem>
+          <ListItemText primary={"Groups"}/>
+          </ListItem>
           {groups}
         </List>
       </Drawer>
       <main className={classes.content}>
         <div className={classes.toolbar} />
         <SARMap 
-          markers={markers} 
+          markers={this.state.markers} 
           maxaccuracy={this.state.maxaccuracy} 
           maxspeed={this.state.maxspeed}
           visibility={this.state.visibility}

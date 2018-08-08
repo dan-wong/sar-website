@@ -40,7 +40,7 @@ class App extends Component {
     //     markersList.push(response[i]);
     //   }
 
-      API.getGroupsInSearch(1).then((response) => {
+      API.getPeopleInGroup(1).then((response) => {
         currentComponent.setState({
           groups: response
         });
@@ -77,7 +77,7 @@ class App extends Component {
     // }
     if (this.state.groups && this.state.groups.length > 0) {
       return (
-        <SarDrawer title={"SAR Webservice"} groups={this.state.groups}/>
+        <SarDrawer title={"SAR Webservice"} groups={this.state.groups} groupId={1}/>
       )
     } else {
       return (<h1>Loading...</h1>)
