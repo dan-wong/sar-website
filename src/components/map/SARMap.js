@@ -13,7 +13,7 @@ import LayerVector from 'ol/layer/Vector';
 import { Point, LineString } from 'ol/geom/';
 import { Style, Circle, Fill, Stroke } from 'ol/style/';
 
-import moment from 'moment';
+//import moment from 'moment';
 
 import { distanceInKmBetweenCoordinates } from '../../functions/LocationFunctions';
 import { rainbow } from '../../functions/ColorGenerator';

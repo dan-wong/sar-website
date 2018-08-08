@@ -1,23 +1,19 @@
 import React from 'react';
 import { withStyles } from '@material-ui/core/styles';
-import PropTypes from 'prop-types';
-import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
-import TableHead from '@material-ui/core/TableHead';
-import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
+import { renderComponent } from 'recompose';
+import Tabs from '@material-ui/core/Tabs';
+import Tab from '@material-ui/core/Tab';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
-import { renderComponent } from 'recompose';
 import { getAllSearches } from '../../api';
 import SearchTable from './SearchTable';
-
+import Button from '@material-ui/core/Button';
 
 const styles = theme => ({
   button: {
-    margin: theme.spacing.unit,
+    margin: theme.spacing.unit * 2,
   },
   pStyle: {
     fontSize: '45px',
@@ -25,16 +21,21 @@ const styles = theme => ({
     color: 'darkBlue'
   },
   toolbar: theme.mixins.toolbar,
+  
 });
 
-class SARWelcome extends React.Component {
-  
+class ManageHome extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      searches: []
+      searches: [],
+      tabSelected: 0 //0 = tab 1 (search), 1 = tab 2 (people)
     };
   }
+
+  handleChange = (event, tabSelected) => {
+    this.setState({ tabSelected });
+  };
 
   componentDidMount() {
     let currentComponent = this;
@@ -54,10 +55,14 @@ class SARWelcome extends React.Component {
 
   render() {
     const { classes } = this.props;
+    const { tabSelected } = this.state;
+
+    let tableDisplayed = tabSelected == 0 ? <SearchTable searches={this.state.searches} /> : null;
 
     return (
+
       <div>
-        <AppBar position="absolute" className={classes.appBar}>
+       <AppBar position="absolute" className={classes.appBar}>
          <Toolbar>
            <Typography variant="title" color="inherit" noWrap>
               SAR Webservice
@@ -65,16 +70,21 @@ class SARWelcome extends React.Component {
         </Toolbar>
        </AppBar>
        <div className={classes.toolbar} />
-        <h1 className={classes.pStyle}>Search And Rescue Home</h1>
+       <h1 className={classes.pStyle}>Manage Search and People</h1>
         <Paper style={{ margin: "5%" }}>
-          <SearchTable searches={this.state.searches} >
-          </SearchTable>
-        </Paper>
+          <Tabs value={tabSelected} onChange={this.handleChange}>
+            <Tab label="Search" />
+            <Tab label="People" />
+          </Tabs>
+          <Button variant="contained" color="primary" className={classes.button}>
+              Start a new search
+          </Button>
+          {tableDisplayed}
+        </Paper >
+
       </div>
     );
   }
 }
 
-export default withStyles(styles)(SARWelcome);
-
-
+export default withStyles(styles)(ManageHome);
