@@ -11,7 +11,8 @@ const styles = theme => ({
   linkCell: {
     textDecoration: "underline",
     cursor: 'pointer',
-  }
+  },
+  toolbar: theme.mixins.toolbar,
 });
 
 class SearchTable extends React.Component {
@@ -21,7 +22,12 @@ class SearchTable extends React.Component {
 
 
   cellNavigateHandler() {
+    if (this.props.parent === "SARWelcome") {
       window.location = `${window.location}maps/`
+    } else {
+      window.location = `${window.location}search/`
+    }
+
   }
 
   render() {

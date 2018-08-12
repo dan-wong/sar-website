@@ -11,6 +11,7 @@ import TitleBar from '../common/TitleBar';
 import { renderComponent } from 'recompose';
 import { getAllSearches } from '../../api';
 import SearchTable from './SearchTable';
+import Button from '@material-ui/core/Button';
 
 
 const styles = theme => ({
@@ -59,7 +60,11 @@ class SARWelcome extends React.Component {
        <div className={classes.toolbar} />
         <h1 className={classes.pStyle}>Search And Rescue Home</h1>
         <Paper style={{ margin: "5%" }}>
-          <SearchTable searches={this.state.searches} >
+          <Button variant="contained" color="primary" className={classes.button}
+            onClick={() => window.location = `${window.location}manage/`}>
+              Manage searches
+          </Button>
+          <SearchTable searches={this.state.searches} parent={"SARWelcome"}>
           </SearchTable>
         </Paper>
       </div>

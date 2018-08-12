@@ -5,6 +5,7 @@ import ReactGA from 'react-ga';
 
 import SARWelcome from './components/management/SARWelcome';
 import ManageHome from './components/management/ManageHome';
+import ManageSearch from './components/management/ManageSearch';
 import App from './App';
 
 class TopLevel extends Component {
@@ -18,6 +19,8 @@ class TopLevel extends Component {
           <div>
             <Route exact path="/" component={SARWelcome} />
             <Route path="/maps" component={App} />
+            <Route path="/manage/search" component={ManageSearch} />
+            <Route exact path="/manage" component={ManageHome} />
           </div>
         </Router>
       </MuiThemeProvider>
