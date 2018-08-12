@@ -4,9 +4,7 @@ import Paper from '@material-ui/core/Paper';
 import { renderComponent } from 'recompose';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
-import AppBar from '@material-ui/core/AppBar';
-import Toolbar from '@material-ui/core/Toolbar';
-import Typography from '@material-ui/core/Typography';
+import TitleBar from '../common/TitleBar';
 import { getAllSearches } from '../../api';
 import SearchTable from './SearchTable';
 import Button from '@material-ui/core/Button';
@@ -19,9 +17,7 @@ const styles = theme => ({
     fontSize: '45px',
     textAlign: 'center',
     color: 'darkBlue'
-  },
-  toolbar: theme.mixins.toolbar,
-  
+  }  
 });
 
 class ManageHome extends React.Component {
@@ -62,13 +58,7 @@ class ManageHome extends React.Component {
     return (
 
       <div>
-       <AppBar position="absolute" className={classes.appBar}>
-         <Toolbar>
-           <Typography variant="title" color="inherit" noWrap>
-              SAR Webservice
-           </Typography>
-        </Toolbar>
-       </AppBar>
+       <TitleBar /> 
        <div className={classes.toolbar} />
        <h1 className={classes.pStyle}>Manage Search and People</h1>
         <Paper style={{ margin: "5%" }}>

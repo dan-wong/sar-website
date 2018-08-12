@@ -1,12 +1,20 @@
 import React from 'react';
 import Table from '@material-ui/core/Table';
+import { withStyles } from '@material-ui/core/styles';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
 
-export default class SearchTable extends React.Component {
+const styles = theme => ({
+  linkCell: {
+    textDecoration: "underline",
+    cursor: 'pointer',
+  }
+});
+
+class SearchTable extends React.Component {
   constructor(props) {
     super(props);
   }
@@ -17,6 +25,7 @@ export default class SearchTable extends React.Component {
   }
 
   render() {
+    const { classes } = this.props;
     return (
       <div>
           <Table >
@@ -34,7 +43,7 @@ export default class SearchTable extends React.Component {
                 return (
                   <TableRow key={search.id}>
                     <TableCell numeric >{search.id}</TableCell>
-                    <TableCell component="a" onClick={() => this.cellNavigateHandler()} scope="row">
+                    <TableCell component="a" onClick={() => this.cellNavigateHandler()} scope="row" className={classes.linkCell}>
                       {search.name}
                     </TableCell>
                     <TableCell numeric>1</TableCell>
@@ -50,5 +59,6 @@ export default class SearchTable extends React.Component {
   }
 }
 
+export default withStyles(styles)(SearchTable);
 
 

@@ -7,9 +7,7 @@ import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
-import AppBar from '@material-ui/core/AppBar';
-import Toolbar from '@material-ui/core/Toolbar';
-import Typography from '@material-ui/core/Typography';
+import TitleBar from '../common/TitleBar';
 import { renderComponent } from 'recompose';
 import { getAllSearches } from '../../api';
 import SearchTable from './SearchTable';
@@ -57,13 +55,7 @@ class SARWelcome extends React.Component {
 
     return (
       <div>
-        <AppBar position="absolute" className={classes.appBar}>
-         <Toolbar>
-           <Typography variant="title" color="inherit" noWrap>
-              SAR Webservice
-           </Typography>
-        </Toolbar>
-       </AppBar>
+        <TitleBar />
        <div className={classes.toolbar} />
         <h1 className={classes.pStyle}>Search And Rescue Home</h1>
         <Paper style={{ margin: "5%" }}>

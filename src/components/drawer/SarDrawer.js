@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 
 import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
+import TitleBar from '../common/TitleBar';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import List from '@material-ui/core/List';
@@ -117,13 +118,7 @@ class SarDrawer extends React.Component {
 
     return (
       <div className={classes.root}>
-       <AppBar position="absolute" className={classes.appBar}>
-         <Toolbar>
-           <Typography variant="title" color="inherit" noWrap>
-             {title}
-           </Typography>
-        </Toolbar>
-       </AppBar>
+       <TitleBar />
        <Drawer
         variant="permanent"
         classes={{
