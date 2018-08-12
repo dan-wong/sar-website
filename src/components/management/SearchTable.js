@@ -11,6 +11,11 @@ export default class SearchTable extends React.Component {
     super(props);
   }
 
+
+  cellNavigateHandler() {
+      window.location = `${window.location}maps/`
+  }
+
   render() {
     return (
       <div>
@@ -29,7 +34,7 @@ export default class SearchTable extends React.Component {
                 return (
                   <TableRow key={search.id}>
                     <TableCell numeric >{search.id}</TableCell>
-                    <TableCell component="a" href="google.com" scope="row">
+                    <TableCell component="a" onClick={() => this.cellNavigateHandler()} scope="row">
                       {search.name}
                     </TableCell>
                     <TableCell numeric>1</TableCell>
