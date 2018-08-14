@@ -7,6 +7,8 @@ import registerServiceWorker from './registerServiceWorker';
 import SARMap from './components/map/SARMap';
 import ManageHome from './components/management/ManageHome';
 import TopLevel from './TopLevel';
+import DnDApp from './components/dragAndDrop/DragAndDropApp'
 
-ReactDOM.render(<TopLevel  />, document.getElementById('root'));
+
+ReactDOM.render(<DnDApp  />, document.getElementById('root'));
 registerServiceWorker();
