@@ -67,7 +67,8 @@ class ManageHome extends React.Component {
             <Tab label="Search" />
             <Tab label="People" />
           </Tabs>
-          <Button variant="contained" color="primary" className={classes.button}>
+          <Button variant="contained" color="primary" className={classes.button}
+            onClick={() => window.location = `${window.location}createSearch/`}>
               Start a new search
           </Button>
           {tableDisplayed}
