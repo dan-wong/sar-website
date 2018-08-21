@@ -12,6 +12,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Visibility from '@material-ui/icons/Visibility';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
 import TitleBar from '../common/TitleBar';
+import DnDApp from '../dragAndDrop/DragAndDropApp';
 
 
 const styles = theme => ({
@@ -151,6 +152,7 @@ class CreateSearch extends React.Component {
             />
           </FormControl>
         </div>
+          <DnDApp numberOfGroups={this.state.numberOfGroups}/>
       </div>
     );
   }

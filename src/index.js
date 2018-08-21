@@ -10,5 +10,5 @@ import TopLevel from './TopLevel';
 import DnDApp from './components/dragAndDrop/DragAndDropApp'
 
 
-ReactDOM.render(<DnDApp  />, document.getElementById('root'));
+ReactDOM.render(<TopLevel  />, document.getElementById('root'));
 registerServiceWorker();
