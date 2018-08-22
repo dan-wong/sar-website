@@ -9,9 +9,10 @@ import FormHelperText from '@material-ui/core/FormHelperText';
 import FormControl from '@material-ui/core/FormControl';
 import TextField from '@material-ui/core/TextField';
 import MenuItem from '@material-ui/core/MenuItem';
-import Visibility from '@material-ui/icons/Visibility';
+import Paper from '@material-ui/core/Paper';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
 import TitleBar from '../common/TitleBar';
+import AutoSuggestName from '../autoSuggest/AutoSuggestName';
 import DnDApp from '../dragAndDrop/DragAndDropApp';
 
 
@@ -107,50 +108,10 @@ class CreateSearch extends React.Component {
               </MenuItem>
             ))}
           </TextField>
-          <FormControl fullWidth className={classes.margin}>
-            <InputLabel htmlFor="adornment-amount">Amount</InputLabel>
-            <Input
-              id="adornment-amount"
-              value={this.state.amount}
-              onChange={this.handleChange('amount')}
-              startAdornment={<InputAdornment position="start">$</InputAdornment>}
-            />
-          </FormControl>
-          <FormControl
-            className={classNames(classes.margin, classes.withoutLabel, classes.textField)}
-            aria-describedby="weight-helper-text"
-          >
-            <Input
-              id="adornment-weight"
-              value={this.state.weight}
-              onChange={this.handleChange('weight')}
-              endAdornment={<InputAdornment position="end">Kg</InputAdornment>}
-              inputProps={{
-                'aria-label': 'Weight',
-              }}
-            />
-            <FormHelperText id="weight-helper-text">Weight</FormHelperText>
-          </FormControl>
-          <FormControl className={classNames(classes.margin, classes.textField)}>
-            <InputLabel htmlFor="adornment-password">Password</InputLabel>
-            <Input
-              id="adornment-password"
-              type={this.state.showPassword ? 'text' : 'password'}
-              value={this.state.password}
-              onChange={this.handleChange('password')}
-              endAdornment={
-                <InputAdornment position="end">
-                  <IconButton
-                    aria-label="Toggle password visibility"
-                    onClick={this.handleClickShowPassword}
-                    onMouseDown={this.handleMouseDownPassword}
-                  >
-                    {this.state.showPassword ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              }
-            />
-          </FormControl>
+          
+        </div>
+        <div>
+          <AutoSuggestName />
         </div>
           <DnDApp numberOfGroups={this.state.numberOfGroups}/>
       </div>
