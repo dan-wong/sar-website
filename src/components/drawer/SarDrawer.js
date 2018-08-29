@@ -60,9 +60,9 @@ class SarDrawer extends React.Component {
     maxspeed: 80,
     visibility: 50,
     value: 100,
-    checked: [0],
+    checked: new Array(this.props.groups.length).fill(-1),
     markers: [],
-    cachedMarkers: {},
+    cachedMarkers: new Array(this.props.groups.length).fill([]),
   }
 
   static propTypes = {
@@ -80,55 +80,87 @@ class SarDrawer extends React.Component {
   }
 
   handleToggle = value => () => {
-    const { checked } = this.state;
-    const currentIndex = checked.indexOf(value);
-    const newChecked = [...checked];
+    const { checked, cachedMarkers } = this.state;
 
-    if (currentIndex === -1) {
-      newChecked.push(value);
+    if (checked[value] === -1) {
+      checked[value] = 1;
+
+      API.getSearchTrack(this.props.groups[value].id, this.props.groupId).then(function(response) {
+        var markersList = [];
+
+        for (var i=0; i<response.length; i++) {
+          markersList.push(response[i]);
+        }
+
+        cachedMarkers[value] = markersList;
+      });
     } else {
-      newChecked.splice(currentIndex, 1);
+      checked[value] = checked[value] === 0 ? 1 : 0;
     }
+
+    var newMarkers = [];
+    let currentComponent = this;
+
+    checked.forEach((value) => {
+      if (value === 1) {
+        newMarkers.push(currentComponent.state.cachedMarkers[value]);
+      }
+    });
 
     this.setState({
-      checked: newChecked
+      markers: newMarkers,
     });
-    
-    let currentComponent = this;
-    if (currentIndex === -1) {
-      if (typeof this.state.cachedMarkers[value] != 'undefined') {
-        currentComponent.setState({
-          markers: [...currentComponent.state.markers, currentComponent.state.cachedMarkers[value]]
-        })
-      } else { // Person has not been selected before
-        API.getSearchTrack(value, this.props.groupId).then(function(response) {
-          var markersList = [];
-    
-          for (var i=0; i<response.length; i++) {
-            markersList.push(response[i]);
-          }
 
-          var tempCachedMarkers = currentComponent.state.cachedMarkers;
-          tempCachedMarkers[value] = markersList;
-    
-          currentComponent.setState({
-            markers: [...currentComponent.state.markers, markersList],
-            cachedMarkers: tempCachedMarkers
-          });
-        });
-      }
-    } else {
-      var newMarkers = [];
-      newChecked.forEach((value) => {
-        if (value != 0) {
-          newMarkers.push(currentComponent.state.cachedMarkers[value]);
-        }
-      });
+    console.log(this.state);
 
-      currentComponent.setState({
-        markers: newMarkers,
-      })
-    }
+    // const currentIndex = checked.indexOf(value);
+    // const newChecked = [...checked];
+
+    // if (currentIndex === -1) {
+    //   newChecked.push(value);
+    // } else {
+    //   newChecked.splice(currentIndex, 1);
+    // }
+
+    // this.setState({
+    //   checked: newChecked
+    // });
+    
+    // let currentComponent = this;
+    // if (currentIndex === -1) {
+    //   if (typeof this.state.cachedMarkers[value] != 'undefined') {
+    //     currentComponent.setState({
+    //       markers: [...currentComponent.state.markers, currentComponent.state.cachedMarkers[value]]
+    //     })
+    //   } else { // Person has not been selected before
+    //     API.getSearchTrack(value, this.props.groupId).then(function(response) {
+    //       var markersList = [];
+    
+    //       for (var i=0; i<response.length; i++) {
+    //         markersList.push(response[i]);
+    //       }
+
+    //       var tempCachedMarkers = currentComponent.state.cachedMarkers;
+    //       tempCachedMarkers[value] = markersList;
+    
+    //       currentComponent.setState({
+    //         markers: [...currentComponent.state.markers, markersList],
+    //         cachedMarkers: tempCachedMarkers
+    //       });
+    //     });
+    //   }
+    // } else {
+    //   var newMarkers = [];
+    //   newChecked.forEach((value) => {
+    //     if (value != 0) {
+    //       newMarkers.push(currentComponent.state.cachedMarkers[value]);
+    //     }
+    //   });
+
+    //   currentComponent.setState({
+    //     markers: newMarkers,
+    //   })
+    // }
   };
 
   handleChange = (event, value) => {
@@ -140,18 +172,17 @@ class SarDrawer extends React.Component {
 
     let currentComponent = this;
 
-    const groups = this.props.groups.map(function(group) {
+    const groups = this.props.groups.map((group, index) => {
       return (
         <ListItem
-          key={group.id}
+          key={index}
           role={undefined}
           dense
-          button
-          onClick={currentComponent.handleToggle(group.id)}
           className={classes.listItem}
         >
           <Checkbox 
-            checked={currentComponent.state.checked.indexOf(group.id) !== -1}
+            // checked={currentComponent.state.checked[index] === 1}
+            onClick={currentComponent.handleToggle(index)}
             disableRipple 
           />
           <ListItemText primary={`${group.firstName} ${group.lastName}`} secondary={`Person ID: ${group.id}`}/>
