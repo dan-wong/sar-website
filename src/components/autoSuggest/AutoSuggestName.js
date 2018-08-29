@@ -50,8 +50,7 @@ function renderInputComponent(inputProps) {
   const { classes, inputRef = () => {}, ref, ...other } = inputProps;
 
   return (
-    <TextField
-      fullWidth
+    <TextField  
       InputProps={{
         inputRef: node => {
           ref(node);

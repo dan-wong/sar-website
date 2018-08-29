@@ -9,6 +9,7 @@ const styles = theme => ({
     zIndex: theme.zIndex.drawer + 1,
     cursor: 'pointer',
   }
+  
 });
 
 class TitleBar extends Component {

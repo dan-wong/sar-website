@@ -13,6 +13,7 @@ import Paper from '@material-ui/core/Paper';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
 import TitleBar from '../common/TitleBar';
 import AutoSuggestName from '../autoSuggest/AutoSuggestName';
+import Button from '@material-ui/core/Button';
 import DnDApp from '../dragAndDrop/DragAndDropApp';
 
 
@@ -20,6 +21,9 @@ const styles = theme => ({
   root: {
     display: 'flex',
     flexWrap: 'wrap',
+  },
+  button: {
+    margin: theme.spacing.unit,
   },
   margin: {
     margin: theme.spacing.unit,
@@ -40,8 +44,8 @@ const styles = theme => ({
 
 function generateRanges(max) {
   let ranges = new Array(20);
-  for (var i = 1; i <= max ; i++) {
-    ranges[i] = {value: i, label: i};
+  for (var i = 1; i <= max; i++) {
+    ranges[i] = { value: i, label: i };
   }
   return ranges;
 }
@@ -53,7 +57,7 @@ class CreateSearch extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      searchName:'',
+      searchName: '',
       numberOfGroups: 3,
       password: '',
       weight: '',
@@ -67,13 +71,15 @@ class CreateSearch extends React.Component {
     this.setState({ [prop]: event.target.value });
   };
 
-  handleMouseDownPassword = event => {
-    event.preventDefault();
-  };
+  handleAddGroup = () => {
+    const newNumber = this.state.numberOfGroups + 1;
+    this.setState({ numberOfGroups: newNumber });
+  }
 
-  handleClickShowPassword = () => {
-    this.setState(state => ({ showPassword: !state.showPassword }));
-  };
+  handleAddPerson = () => {
+    //LETS
+  }
+
 
   render() {
     const { classes } = this.props;
@@ -83,39 +89,36 @@ class CreateSearch extends React.Component {
         <div>
           <TitleBar />
           <div className={classes.toolbar} />
-          <h1 className={classes.pStyle}>Create a search</h1>
+          <h1 className={classes.pStyle}>Create a Search</h1>
         </div>
+        <Paper style={{ margin: "2%", padding: "2%"}}>
 
-        <div className={classes.root}>
+          <div className={classes.root}>
 
-          <TextField
-            label="Search name"
-            id="name"
-            className={classNames(classes.margin, classes.textField)}
-            onChange={this.handleChange('searchName')}
-          />
 
-          <TextField
-            select
-            label="Number of groups"
-            className={classNames(classes.margin, classes.textField)}
-            value={this.state.numberOfGroups}
-            onChange={this.handleChange('numberOfGroups')}
-          >
-            {ranges.map(option => (
-              <MenuItem key={option.value} value={option.value}>
-                {option.label}
-              </MenuItem>
-            ))}
-          </TextField>
-          
-        </div>
-        <div>
-          <AutoSuggestName />
-        </div>
-          <DnDApp numberOfGroups={this.state.numberOfGroups}/>
+            <TextField
+              label="Search name"
+              id="name"
+              className={classNames(classes.margin, classes.textField)}
+              onChange={this.handleChange('searchName')}
+            />
+
+          </div>
+          <div>
+            <AutoSuggestName />
+            <Button variant="contained" color="primary" className={classes.button}
+              onClick={() => this.handleAddPerson()}>
+              Add person
+            </Button>
+            <Button variant="contained" color="primary" className={classes.button}
+              onClick={() => this.handleAddGroup()}>
+              Add group
+            </Button>
+          </div>
+          <DnDApp numberOfGroups={this.state.numberOfGroups} />
+        </ Paper>
       </div>
-    );
+        );
   }
 }
 

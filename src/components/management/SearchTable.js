@@ -11,8 +11,7 @@ const styles = theme => ({
   linkCell: {
     textDecoration: "underline",
     cursor: 'pointer',
-  },
-  toolbar: theme.mixins.toolbar,
+  }
 });
 
 class SearchTable extends React.Component {
