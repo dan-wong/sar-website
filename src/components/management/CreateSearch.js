@@ -93,13 +93,13 @@ class CreateSearch extends React.Component {
     this.state = {
       searchName: '',
       numberOfGroups: 3,
-      password: '',
-      weight: '',
-      showPassword: false,
+      name: '',
       dndData: createInitialData(3),
     };
 
     this.onDragEnd = this.onDragEnd.bind(this);
+    this.handleAddPerson = this.handleAddPerson.bind(this);
+    this.handleNameEntry = this.handleNameEntry.bind(this);
   }
 
 
@@ -113,8 +113,42 @@ class CreateSearch extends React.Component {
     this.setState({ numberOfGroups: newNumber });
   }
 
-  handleAddPerson = () => {
-    //LETS
+  handleAddPerson () {
+    console.log(this.state.dndData);
+    const oldPersons = this.state.dndData.persons;
+
+    const newKeyName = "person" + (Object.keys(oldPersons).length + 1);
+    const newPerson = {
+      id: newKeyName,
+      name: this.state.name
+    }
+    const newPersons = {
+      ...this.state.dndData.persons,
+      [newKeyName]: newPerson
+    }
+
+    const unassignedPersons = Array.from(this.state.dndData.columns['group1'].personIds);
+    unassignedPersons.push(newKeyName);
+    
+    const newDndData = {
+      ...this.state.dndData,
+      persons: newPersons,
+      columns: {
+        ...this.state.dndData.columns,
+        group1: {
+          ...this.state.dndData.columns.group1,
+          personIds: unassignedPersons
+        }
+      }
+    }
+
+    console.log(newDndData);
+
+    this.setState({dndData: newDndData});
+  }
+
+  handleNameEntry(name) {
+    this.setState({name: name});
   }
 
   onDragEnd (result) {
@@ -212,7 +246,7 @@ class CreateSearch extends React.Component {
 
           </div>
           <div>
-            <AutoSuggestName />
+            <AutoSuggestName name={this.state.name} handleNameEntry={this.handleNameEntry}/>
             <Button variant="contained" color="primary" className={classes.button}
               onClick={() => this.handleAddPerson()}>
               Add person
