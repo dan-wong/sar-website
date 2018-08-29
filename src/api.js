@@ -23,7 +23,7 @@ export default {
 }
 
 export function getAllSearches() {
-    return axios.get(`https://c44r10nquk.execute-api.ap-southeast-2.amazonaws.com/test/sarFunction?type=search&personId=1`, config)
+    return axios.get(`https://c44r10nquk.execute-api.ap-southeast-2.amazonaws.com/test/sarFunction?type=search&all=true`, config)
         .then(response => {
             return response.data.searches;
         });

@@ -161,9 +161,9 @@ class AutoSuggestName extends React.Component {
     });
   };
 
-  handleChange = name => (event, { newValue }) => {
+  handleChange = () => (event, { newValue }) => {
     this.setState({
-      [name]: newValue,
+      popper: newValue,
     });
   };
 
@@ -189,7 +189,7 @@ class AutoSuggestName extends React.Component {
             label: 'Add new searcher',
             placeholder: 'Enter name of searcher',
             value: this.state.popper,
-            onChange: this.handleChange('popper'),
+            onChange: this.handleChange(),
             inputRef: node => {
               this.popperNode = node;
             },

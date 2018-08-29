@@ -16,6 +16,40 @@ import AutoSuggestName from '../autoSuggest/AutoSuggestName';
 import Button from '@material-ui/core/Button';
 import DnDApp from '../dragAndDrop/DragAndDropApp';
 
+function generateColumns(numberOfGroups) {
+  let columns = {};
+  for (var i = 1; i <= numberOfGroups; i++) {
+    columns["group" + i] = {
+        id: "group" + i,
+        name: 'gee',
+        personIds: [],
+    };
+  }
+  return columns;
+}
+
+function createInitialData(numberOfGroups) {
+  let columns = generateColumns(numberOfGroups);
+
+  let arrayOfAllColumns = [];
+  for (var i = 1; i <= numberOfGroups; i++) {
+      arrayOfAllColumns[i-1] = 'group' + i;
+  }
+
+  const initialData = {
+      persons: {
+          'person1': {id: 'person1', name: "hi1"},
+          'person2': {id: 'person2', name: "hi2"},  
+      },
+      columns: columns,
+  
+      columnOrder: arrayOfAllColumns,
+  }
+
+  initialData.columns.group1.personIds = ['person1', 'person2'];
+
+  return initialData;
+}
 
 const styles = theme => ({
   root: {
@@ -62,7 +96,10 @@ class CreateSearch extends React.Component {
       password: '',
       weight: '',
       showPassword: false,
+      dndData: createInitialData(3),
     };
+
+    this.onDragEnd = this.onDragEnd.bind(this);
   }
 
 
@@ -79,6 +116,76 @@ class CreateSearch extends React.Component {
   handleAddPerson = () => {
     //LETS
   }
+
+  onDragEnd (result) {
+    // document.body.style.color = 'inherit';
+    // document.body.style.backgroundColor = 'inherit';
+
+    const { destination, source, draggableId } = result;
+
+    if (!destination) {
+        return;
+    }
+
+    if (
+        destination.droppableId === source.droppableId &&
+        destination.index === source.index
+    ) {
+        return;
+    }
+
+
+
+    const start = this.state.dndData.columns[source.droppableId];
+    const finish = this.state.dndData.columns[destination.droppableId];
+
+    if (start === finish) {
+        const newPersonIds = Array.from(start.personIds);
+        newPersonIds.splice(source.index, 1);
+        newPersonIds.splice(destination.index, 0, draggableId);
+
+        const newColumn = {
+            ...start,
+            personIds: newPersonIds,
+        };
+
+        const newDndData = {
+            ...this.state.dndData,
+            columns: {
+                ...this.state.dndData.columns,
+                [newColumn.id]: newColumn,
+            },
+        };
+        this.setState({dndData: newDndData});
+        return;
+    }
+
+    //Moving from one list to another
+    const startPersonIds = Array.from(start.personIds);
+    startPersonIds.splice(source.index, 1);
+    const newStart = {
+        ...start,
+        personIds: startPersonIds,
+    }
+    const finishPersonIds = Array.from(finish.personIds);
+    finishPersonIds.splice(destination.index, 0, draggableId)
+
+    const newFinish = {
+        ...finish,
+        personIds:finishPersonIds
+    }
+
+    const newDndData = {
+        ...this.state.dndData,
+        columns: {
+            ...this.state.dndData.columns,
+            [newStart.id]: newStart,
+            [newFinish.id]: newFinish,
+        },
+    }
+    this.setState({dndData: newDndData});
+}
+
 
 
   render() {
@@ -115,7 +222,7 @@ class CreateSearch extends React.Component {
               Add group
             </Button>
           </div>
-          <DnDApp numberOfGroups={this.state.numberOfGroups} />
+          <DnDApp dndData={this.state.dndData} onDragEnd={this.onDragEnd}/>
         </ Paper>
       </div>
         );
