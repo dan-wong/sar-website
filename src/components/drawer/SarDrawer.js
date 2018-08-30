@@ -79,12 +79,30 @@ class SarDrawer extends React.Component {
     });
   }
 
+  updateMap() {
+    const { checked } = this.state;
+
+    let currentComponent = this;
+
+    var newMarkers = [];
+    for (var i=0; i<checked.length; i++) {
+      if (checked[i] === 1) {
+        newMarkers.push(currentComponent.state.cachedMarkers[i]);
+      }
+    }
+
+    this.setState({
+      markers: newMarkers,
+    });
+  }
+
   handleToggle = value => () => {
     const { checked, cachedMarkers } = this.state;
 
     if (checked[value] === -1) {
       checked[value] = 1;
-
+      
+      let currentComponent = this;
       API.getSearchTrack(this.props.groups[value].id, this.props.groupId).then(function(response) {
         var markersList = [];
 
@@ -93,74 +111,13 @@ class SarDrawer extends React.Component {
         }
 
         cachedMarkers[value] = markersList;
+
+        currentComponent.updateMap();
       });
     } else {
       checked[value] = checked[value] === 0 ? 1 : 0;
+      this.updateMap();
     }
-
-    var newMarkers = [];
-    let currentComponent = this;
-
-    checked.forEach((value) => {
-      if (value === 1) {
-        newMarkers.push(currentComponent.state.cachedMarkers[value]);
-      }
-    });
-
-    this.setState({
-      markers: newMarkers,
-    });
-
-    console.log(this.state);
-
-    // const currentIndex = checked.indexOf(value);
-    // const newChecked = [...checked];
-
-    // if (currentIndex === -1) {
-    //   newChecked.push(value);
-    // } else {
-    //   newChecked.splice(currentIndex, 1);
-    // }
-
-    // this.setState({
-    //   checked: newChecked
-    // });
-    
-    // let currentComponent = this;
-    // if (currentIndex === -1) {
-    //   if (typeof this.state.cachedMarkers[value] != 'undefined') {
-    //     currentComponent.setState({
-    //       markers: [...currentComponent.state.markers, currentComponent.state.cachedMarkers[value]]
-    //     })
-    //   } else { // Person has not been selected before
-    //     API.getSearchTrack(value, this.props.groupId).then(function(response) {
-    //       var markersList = [];
-    
-    //       for (var i=0; i<response.length; i++) {
-    //         markersList.push(response[i]);
-    //       }
-
-    //       var tempCachedMarkers = currentComponent.state.cachedMarkers;
-    //       tempCachedMarkers[value] = markersList;
-    
-    //       currentComponent.setState({
-    //         markers: [...currentComponent.state.markers, markersList],
-    //         cachedMarkers: tempCachedMarkers
-    //       });
-    //     });
-    //   }
-    // } else {
-    //   var newMarkers = [];
-    //   newChecked.forEach((value) => {
-    //     if (value != 0) {
-    //       newMarkers.push(currentComponent.state.cachedMarkers[value]);
-    //     }
-    //   });
-
-    //   currentComponent.setState({
-    //     markers: newMarkers,
-    //   })
-    // }
   };
 
   handleChange = (event, value) => {
@@ -189,6 +146,9 @@ class SarDrawer extends React.Component {
         </ListItem>
       );
     });
+
+    console.log('SARDrawer Render');
+    console.log(this.state);
 
     return (
       <div className={classes.root}>
