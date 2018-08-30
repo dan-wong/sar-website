@@ -1,7 +1,10 @@
 import React from 'react'
 import styled from 'styled-components';
+import classNames from 'classnames';
 import { Droppable } from 'react-beautiful-dnd';
+import TextField from '@material-ui/core/TextField';
 import Person from './task';
+import { withStyles } from '@material-ui/core/styles';
 
 const Container = styled.div`
     margin: 8px;
@@ -23,11 +26,32 @@ const TaskList = styled.div`
     min-height: 100px;
 `;
 
-export default class Column extends React.Component {
+const styles = theme => ({
+    margin: {
+        margin: theme.spacing.unit,
+    },
+    textField: {
+        flexBasis: 70,
+    },
+
+});
+
+class Column extends React.Component {
+    handleGroupNameChange() {
+        
+    }
+
     render() {
+        const { classes } = this.props;
         return (
             <Container>
-                <Title> {this.props.column.name}</Title>
+                <TextField
+                    label="Group name"
+                    id="name"
+                    className={classNames(classes.margin, classes.textField)}
+                    onChange={this.handleGroupNameChange()}
+
+                />
                 <Droppable droppableId={this.props.column.id}>
                     {(provided, snapshot) => (
                         <TaskList
@@ -37,9 +61,9 @@ export default class Column extends React.Component {
                         >
                             {this.props.persons.map((person, index) => (
                                 <Person key={person.id} person={person} index={index} />
-                            ))}    
+                            ))}
                             {provided.placeholder}
-                        </TaskList>                           
+                        </TaskList>
                     )}
 
                 </Droppable>
@@ -47,3 +71,5 @@ export default class Column extends React.Component {
         );
     }
 }
+
+export default withStyles(styles)(Column);

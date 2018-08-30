@@ -16,41 +16,6 @@ import AutoSuggestName from '../autoSuggest/AutoSuggestName';
 import Button from '@material-ui/core/Button';
 import DnDApp from '../dragAndDrop/DragAndDropApp';
 
-function generateColumns(numberOfGroups) {
-  let columns = {};
-  for (var i = 1; i <= numberOfGroups; i++) {
-    columns["group" + i] = {
-        id: "group" + i,
-        name: 'gee',
-        personIds: [],
-    };
-  }
-  return columns;
-}
-
-function createInitialData(numberOfGroups) {
-  let columns = generateColumns(numberOfGroups);
-
-  let arrayOfAllColumns = [];
-  for (var i = 1; i <= numberOfGroups; i++) {
-      arrayOfAllColumns[i-1] = 'group' + i;
-  }
-
-  const initialData = {
-      persons: {
-          'person1': {id: 'person1', name: "hi1"},
-          'person2': {id: 'person2', name: "hi2"},  
-      },
-      columns: columns,
-  
-      columnOrder: arrayOfAllColumns,
-  }
-
-  initialData.columns.group1.personIds = ['person1', 'person2'];
-
-  return initialData;
-}
-
 const styles = theme => ({
   root: {
     display: 'flex',
@@ -75,6 +40,41 @@ const styles = theme => ({
   },
   toolbar: theme.mixins.toolbar,
 });
+
+function generateColumns(numberOfGroups) {
+  let columns = {};
+  for (var i = 1; i <= numberOfGroups; i++) {
+    columns["group" + i] = {
+      id: "group" + i,
+      name: 'gee',
+      personIds: [],
+    };
+  }
+  return columns;
+}
+
+function createInitialData(numberOfGroups) {
+  let columns = generateColumns(numberOfGroups);
+
+  let arrayOfAllColumns = [];
+  for (var i = 1; i <= numberOfGroups; i++) {
+    arrayOfAllColumns[i - 1] = 'group' + i;
+  }
+
+  const initialData = {
+    persons: {
+      'person1': { id: 'person1', name: "hi1" },
+      'person2': { id: 'person2', name: "hi2" },
+    },
+    columns: columns,
+
+    columnOrder: arrayOfAllColumns,
+  }
+
+  initialData.columns.group1.personIds = ['person1', 'person2'];
+
+  return initialData;
+}
 
 function generateRanges(max) {
   let ranges = new Array(20);
@@ -108,13 +108,10 @@ class CreateSearch extends React.Component {
     this.setState({ [prop]: event.target.value });
   };
 
-  handleAddGroup = () => {
-    const newNumber = this.state.numberOfGroups + 1;
-    this.setState({ numberOfGroups: newNumber });
-  }
-
-  handleAddPerson () {
-    console.log(this.state.dndData);
+  handleAddPerson() {
+    if (this.state.name === '') {
+      return;
+    }
     const oldPersons = this.state.dndData.persons;
 
     const newKeyName = "person" + (Object.keys(oldPersons).length + 1);
@@ -129,7 +126,7 @@ class CreateSearch extends React.Component {
 
     const unassignedPersons = Array.from(this.state.dndData.columns['group1'].personIds);
     unassignedPersons.push(newKeyName);
-    
+
     const newDndData = {
       ...this.state.dndData,
       persons: newPersons,
@@ -141,31 +138,56 @@ class CreateSearch extends React.Component {
         }
       }
     }
+    this.setState({ dndData: newDndData });
+  }
+
+  handleAddGroup() {
+    console.log('hi');
+    const oldColumns = this.state.dndData.columns;
+
+    const newColumnKey = "group" + (Object.keys(oldColumns).length + 1);
+    const newColumn = {
+      id: newColumnKey,
+      name: 'new group',
+      personIds: [],
+    }
+
+    const newColumnOrder = Array.from(this.state.dndData.columnOrder);
+    newColumnOrder.push(newColumnKey);
+    
+    const newDndData = {
+      ...this.state.dndData,
+      columnOrder: newColumnOrder,
+      columns: {
+        ...this.state.dndData.columns,
+        [newColumnKey]: newColumn
+      }
+    }
 
     console.log(newDndData);
 
-    this.setState({dndData: newDndData});
+    this.setState({ dndData: newDndData });
   }
 
   handleNameEntry(name) {
-    this.setState({name: name});
+    this.setState({ name: name });
   }
 
-  onDragEnd (result) {
+  onDragEnd(result) {
     // document.body.style.color = 'inherit';
     // document.body.style.backgroundColor = 'inherit';
 
     const { destination, source, draggableId } = result;
 
     if (!destination) {
-        return;
+      return;
     }
 
     if (
-        destination.droppableId === source.droppableId &&
-        destination.index === source.index
+      destination.droppableId === source.droppableId &&
+      destination.index === source.index
     ) {
-        return;
+      return;
     }
 
 
@@ -174,51 +196,51 @@ class CreateSearch extends React.Component {
     const finish = this.state.dndData.columns[destination.droppableId];
 
     if (start === finish) {
-        const newPersonIds = Array.from(start.personIds);
-        newPersonIds.splice(source.index, 1);
-        newPersonIds.splice(destination.index, 0, draggableId);
+      const newPersonIds = Array.from(start.personIds);
+      newPersonIds.splice(source.index, 1);
+      newPersonIds.splice(destination.index, 0, draggableId);
 
-        const newColumn = {
-            ...start,
-            personIds: newPersonIds,
-        };
+      const newColumn = {
+        ...start,
+        personIds: newPersonIds,
+      };
 
-        const newDndData = {
-            ...this.state.dndData,
-            columns: {
-                ...this.state.dndData.columns,
-                [newColumn.id]: newColumn,
-            },
-        };
-        this.setState({dndData: newDndData});
-        return;
+      const newDndData = {
+        ...this.state.dndData,
+        columns: {
+          ...this.state.dndData.columns,
+          [newColumn.id]: newColumn,
+        },
+      };
+      this.setState({ dndData: newDndData });
+      return;
     }
 
     //Moving from one list to another
     const startPersonIds = Array.from(start.personIds);
     startPersonIds.splice(source.index, 1);
     const newStart = {
-        ...start,
-        personIds: startPersonIds,
+      ...start,
+      personIds: startPersonIds,
     }
     const finishPersonIds = Array.from(finish.personIds);
     finishPersonIds.splice(destination.index, 0, draggableId)
 
     const newFinish = {
-        ...finish,
-        personIds:finishPersonIds
+      ...finish,
+      personIds: finishPersonIds
     }
 
     const newDndData = {
-        ...this.state.dndData,
-        columns: {
-            ...this.state.dndData.columns,
-            [newStart.id]: newStart,
-            [newFinish.id]: newFinish,
-        },
+      ...this.state.dndData,
+      columns: {
+        ...this.state.dndData.columns,
+        [newStart.id]: newStart,
+        [newFinish.id]: newFinish,
+      },
     }
-    this.setState({dndData: newDndData});
-}
+    this.setState({ dndData: newDndData });
+  }
 
 
 
@@ -232,7 +254,7 @@ class CreateSearch extends React.Component {
           <div className={classes.toolbar} />
           <h1 className={classes.pStyle}>Create a Search</h1>
         </div>
-        <Paper style={{ margin: "2%", padding: "2%"}}>
+        <Paper style={{ margin: "2%", padding: "2%" }}>
 
           <div className={classes.root}>
 
@@ -246,7 +268,7 @@ class CreateSearch extends React.Component {
 
           </div>
           <div>
-            <AutoSuggestName name={this.state.name} handleNameEntry={this.handleNameEntry}/>
+            <AutoSuggestName name={this.state.name} handleNameEntry={this.handleNameEntry} />
             <Button variant="contained" color="primary" className={classes.button}
               onClick={() => this.handleAddPerson()}>
               Add person
@@ -256,10 +278,10 @@ class CreateSearch extends React.Component {
               Add group
             </Button>
           </div>
-          <DnDApp dndData={this.state.dndData} onDragEnd={this.onDragEnd}/>
+          <DnDApp dndData={this.state.dndData} onDragEnd={this.onDragEnd} />
         </ Paper>
       </div>
-        );
+    );
   }
 }
 
