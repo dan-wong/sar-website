@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import classNames from 'classnames';
 import { Droppable } from 'react-beautiful-dnd';
 import TextField from '@material-ui/core/TextField';
-import Person from './task';
+import Person from './person';
 import { withStyles } from '@material-ui/core/styles';
 
 const Container = styled.div`
@@ -21,7 +21,7 @@ const Title = styled.h3`
 const TaskList = styled.div`
     padding: 8px;
     transition: background-color 0.2s ease;
-    background-color: ${props => (props.isDraggingOver ? 'skyblue' : 'white')};
+    background-color: ${props => (props.isDraggingOver ? 'Silver' : 'white')};
     flex-grow: 1;
     min-height: 100px;
 `;

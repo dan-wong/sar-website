@@ -93,7 +93,8 @@ class CreateSearch extends React.Component {
     const newKeyName = "person" + (Object.keys(oldPersons).length + 1);
     const newPerson = {
       id: newKeyName,
-      name: this.state.name
+      name: this.state.name,
+      dbId: '',
     }
     const newPersons = {
       ...this.state.dndData.persons,

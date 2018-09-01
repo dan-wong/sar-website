@@ -1,5 +1,4 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 
 import styled from 'styled-components';
 import Column from './column';
@@ -64,7 +63,5 @@ export default class DnDApp extends React.Component {
                 </Container>
             </DragDropContext>
         )
-
-
     }
 }
