@@ -41,50 +41,31 @@ const styles = theme => ({
   toolbar: theme.mixins.toolbar,
 });
 
-function generateColumns(numberOfGroups) {
-  let columns = {};
-  for (var i = 1; i <= numberOfGroups; i++) {
-    columns["group" + i] = {
-      id: "group" + i,
-      name: 'gee',
-      personIds: [],
-    };
-  }
-  return columns;
-}
+function createInitialData() {
 
-function createInitialData(numberOfGroups) {
-  let columns = generateColumns(numberOfGroups);
+  let arrayOfAllColumns = ['group1'];
 
-  let arrayOfAllColumns = [];
-  for (var i = 1; i <= numberOfGroups; i++) {
-    arrayOfAllColumns[i - 1] = 'group' + i;
+  let column = {
+    id: "group1",
+    name: 'unassigned',
+    personIds: [],
   }
 
   const initialData = {
     persons: {
-      'person1': { id: 'person1', name: "hi1" },
-      'person2': { id: 'person2', name: "hi2" },
+
     },
-    columns: columns,
+    columns: {
+      group1: column
+    },
 
     columnOrder: arrayOfAllColumns,
   }
 
-  initialData.columns.group1.personIds = ['person1', 'person2'];
+  initialData.columns.group1.personIds = [];
 
   return initialData;
 }
-
-function generateRanges(max) {
-  let ranges = new Array(20);
-  for (var i = 1; i <= max; i++) {
-    ranges[i] = { value: i, label: i };
-  }
-  return ranges;
-}
-
-const ranges = generateRanges(10);
 
 class CreateSearch extends React.Component {
 
@@ -92,14 +73,9 @@ class CreateSearch extends React.Component {
     super(props);
     this.state = {
       searchName: '',
-      numberOfGroups: 3,
       name: '',
-      dndData: createInitialData(3),
+      dndData: createInitialData(),
     };
-
-    this.onDragEnd = this.onDragEnd.bind(this);
-    this.handleAddPerson = this.handleAddPerson.bind(this);
-    this.handleNameEntry = this.handleNameEntry.bind(this);
   }
 
 
@@ -108,7 +84,7 @@ class CreateSearch extends React.Component {
     this.setState({ [prop]: event.target.value });
   };
 
-  handleAddPerson() {
+  handleAddPerson = () => {
     if (this.state.name === '') {
       return;
     }
@@ -142,7 +118,6 @@ class CreateSearch extends React.Component {
   }
 
   handleAddGroup() {
-    console.log('hi');
     const oldColumns = this.state.dndData.columns;
 
     const newColumnKey = "group" + (Object.keys(oldColumns).length + 1);
@@ -154,7 +129,7 @@ class CreateSearch extends React.Component {
 
     const newColumnOrder = Array.from(this.state.dndData.columnOrder);
     newColumnOrder.push(newColumnKey);
-    
+
     const newDndData = {
       ...this.state.dndData,
       columnOrder: newColumnOrder,
@@ -164,16 +139,33 @@ class CreateSearch extends React.Component {
       }
     }
 
-    console.log(newDndData);
+    this.setState({ dndData: newDndData });
+  }
+
+  handleNameEntry = (name) => {
+    this.setState({ name: name });
+  }
+
+  handleGroupNameChange = (groupKey, newName) =>  {
+    const newGroup = {
+      ...this.state.dndData.columns[groupKey],
+      name: newName,
+    }
+
+
+
+    const newDndData = {
+      ...this.state.dndData,
+      columns: {
+        ...this.state.dndData.columns,
+        [groupKey]: newGroup
+      }
+    }
 
     this.setState({ dndData: newDndData });
   }
 
-  handleNameEntry(name) {
-    this.setState({ name: name });
-  }
-
-  onDragEnd(result) {
+  onDragEnd = (result) => {
     // document.body.style.color = 'inherit';
     // document.body.style.backgroundColor = 'inherit';
 
@@ -278,7 +270,11 @@ class CreateSearch extends React.Component {
               Add group
             </Button>
           </div>
-          <DnDApp dndData={this.state.dndData} onDragEnd={this.onDragEnd} />
+          <DnDApp
+            dndData={this.state.dndData}
+            onDragEnd={this.onDragEnd}
+            handleGroupNameChange={this.handleGroupNameChange}
+          />
         </ Paper>
       </div>
     );

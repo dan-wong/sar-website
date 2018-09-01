@@ -33,12 +33,11 @@ const styles = theme => ({
     textField: {
         flexBasis: 70,
     },
-
 });
 
 class Column extends React.Component {
-    handleGroupNameChange() {
-        
+    handleGroupNameChange = () => event => {
+        this.props.handleGroupNameChange(this.props.column.id, event.target.value);
     }
 
     render() {
@@ -48,9 +47,12 @@ class Column extends React.Component {
                 <TextField
                     label="Group name"
                     id="name"
+                    value={this.props.column.name}
                     className={classNames(classes.margin, classes.textField)}
                     onChange={this.handleGroupNameChange()}
-
+                    InputProps={{
+                        disabled: this.props.column.id == 'group1',
+                    }}
                 />
                 <Droppable droppableId={this.props.column.id}>
                     {(provided, snapshot) => (

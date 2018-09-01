@@ -48,13 +48,18 @@ export default class DnDApp extends React.Component {
             // onDragStart={this.onDragStart}
             // onDragUpdate={this.onDragUpdate}
             >
-            
+
                 <Container>
                     {this.props.dndData.columnOrder.map(columnId => {
                         const column = this.props.dndData.columns[columnId];
                         const persons = column.personIds.map(personId => this.props.dndData.persons[personId]);
 
-                        return <Column key={column.id} column={column} persons={persons} />;
+                        return <Column
+                            key={column.id}
+                            column={column}
+                            persons={persons}
+                            handleGroupNameChange={this.props.handleGroupNameChange}
+                        />;
                     })}
                 </Container>
             </DragDropContext>
