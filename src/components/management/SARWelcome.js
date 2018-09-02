@@ -17,11 +17,14 @@ import Button from '@material-ui/core/Button';
 const styles = theme => ({
   button: {
     margin: theme.spacing.unit,
+    '&:hover': {
+      backgroundColor: '#F64C72', 
+    }
   },
   pStyle: {
     fontSize: '45px',
     textAlign: 'center',
-    color: 'darkBlue'
+    color: '#4155B0'
   },
   toolbar: theme.mixins.toolbar,
 });

@@ -16,14 +16,31 @@ import TitleBar from '../common/TitleBar';
 import AutoSuggestName from '../autoSuggest/AutoSuggestName';
 import Button from '@material-ui/core/Button';
 import DnDApp from '../dragAndDrop/DragAndDropApp';
+import SaveIcon from '@material-ui/icons/Save';
 
 const styles = theme => ({
   root: {
     display: 'flex',
     flexWrap: 'wrap',
   },
+  divFullWidth: {
+    width: '100%',
+    backgroundColor: '',
+  },
   button: {
     margin: theme.spacing.unit,
+    '&:hover': {
+      backgroundColor: '#F64C72', 
+    }
+  },
+  buttonHolder: {
+    justifyContent: 'flex-end',
+    display: 'flex',
+  },
+  saveButton: {
+    '&:hover': {
+      backgroundColor: '#F64C72', 
+    }
   },
   margin: {
     margin: theme.spacing.unit,
@@ -37,9 +54,16 @@ const styles = theme => ({
   pStyle: {
     fontSize: '45px',
     textAlign: 'center',
-    color: 'darkBlue'
+    color: '#4155B0',
   },
   toolbar: theme.mixins.toolbar,
+
+  leftIcon: {
+    marginRight: theme.spacing.unit,
+  },
+  iconSmall: {
+    fontSize: 20,
+  },
 });
 
 function createInitialData() {
@@ -313,6 +337,17 @@ class CreateSearch extends React.Component {
             onDragEnd={this.onDragEnd}
             handleGroupNameChange={this.handleGroupNameChange}
           />
+          <div className={classNames(classes.divFullWidth)}>
+            <div className={(classes.buttonHolder)}>
+              <Button variant="contained" color="primary" className={classNames(classes.button, classes.saveButton)}
+                onClick={() => this.handleSave()}>
+                <SaveIcon className={classNames(classes.leftIcon, classes.iconSmall)} />
+                Save
+              </Button>
+            </div>
+
+          </div>
+
         </ Paper>
       </div>
     );
