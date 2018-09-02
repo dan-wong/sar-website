@@ -11,6 +11,7 @@ import TextField from '@material-ui/core/TextField';
 import MenuItem from '@material-ui/core/MenuItem';
 import Paper from '@material-ui/core/Paper';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
+import { getAllPersons } from '../../api';
 import TitleBar from '../common/TitleBar';
 import AutoSuggestName from '../autoSuggest/AutoSuggestName';
 import Button from '@material-ui/core/Button';
@@ -75,7 +76,30 @@ class CreateSearch extends React.Component {
       searchName: '',
       name: '',
       dndData: createInitialData(),
+      personsForSuggestion: [],
     };
+  }
+
+  componentDidMount() {
+    let currentComponent = this;
+    getAllPersons().then(function (response) {
+      var personList = [];
+
+      let personsAsSuggestions = response.map(person => {
+        var personAsSuggestion = {};
+        personAsSuggestion.id = person.id;
+        personAsSuggestion.label = person.firstName + ' ' + person.lastName;
+        return personAsSuggestion;
+      });
+
+      for (var i = 0; i < personsAsSuggestions.length; i++) {
+        personList.push(personsAsSuggestions[i]);
+      }
+
+      currentComponent.setState({
+        personsForSuggestion: personList,
+      });
+    })
   }
 
 
@@ -84,17 +108,26 @@ class CreateSearch extends React.Component {
     this.setState({ [prop]: event.target.value });
   };
 
+  getDbIdForPerson = (name) => {
+    let arrayOfLabels = this.state.personsForSuggestion.map(person => person.label);
+    let index = arrayOfLabels.findIndex(label => label === name);
+    return index === -1 ? -1 : this.state.personsForSuggestion[index].id;
+  }
+
   handleAddPerson = () => {
     if (this.state.name === '') {
       return;
     }
+
+    const dbId = this.getDbIdForPerson(this.state.name);
+
     const oldPersons = this.state.dndData.persons;
 
     const newKeyName = "person" + (Object.keys(oldPersons).length + 1);
     const newPerson = {
       id: newKeyName,
       name: this.state.name,
-      dbId: '',
+      dbId: dbId === -1 ? 'new' : dbId,
     }
     const newPersons = {
       ...this.state.dndData.persons,
@@ -147,7 +180,7 @@ class CreateSearch extends React.Component {
     this.setState({ name: name });
   }
 
-  handleGroupNameChange = (groupKey, newName) =>  {
+  handleGroupNameChange = (groupKey, newName) => {
     const newGroup = {
       ...this.state.dndData.columns[groupKey],
       name: newName,
@@ -261,7 +294,11 @@ class CreateSearch extends React.Component {
 
           </div>
           <div>
-            <AutoSuggestName name={this.state.name} handleNameEntry={this.handleNameEntry} />
+            <AutoSuggestName
+              name={this.state.name}
+              handleNameEntry={this.handleNameEntry}
+              personsForSuggestion={this.state.personsForSuggestion}
+            />
             <Button variant="contained" color="primary" className={classes.button}
               onClick={() => this.handleAddPerson()}>
               Add person
