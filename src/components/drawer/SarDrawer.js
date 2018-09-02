@@ -60,9 +60,9 @@ class SarDrawer extends React.Component {
     maxspeed: 80,
     visibility: 50,
     value: 100,
-    checked: new Array(this.props.groups.length).fill(-1),
+    checked: new Array(this.props.groups[0].people.length).fill(-1),
     markers: [],
-    cachedMarkers: new Array(this.props.groups.length).fill([]),
+    cachedMarkers: new Array(this.props.groups[0].people.length).fill([]),
   }
 
   static propTypes = {
@@ -103,7 +103,8 @@ class SarDrawer extends React.Component {
       checked[value] = 1;
       
       let currentComponent = this;
-      API.getSearchTrack(this.props.groups[value].id, this.props.groupId).then(function(response) {
+      console.log(this.props.groups);
+      API.getSearchTrack(this.props.groups[0].people[value].id, this.props.groupId).then(function(response) {
         var markersList = [];
 
         for (var i=0; i<response.length; i++) {
@@ -129,7 +130,7 @@ class SarDrawer extends React.Component {
 
     let currentComponent = this;
 
-    const groups = this.props.groups.map((group, index) => {
+    const groups = this.props.groups[0].people.map((person, index) => {
       return (
         <ListItem
           key={index}
@@ -142,13 +143,10 @@ class SarDrawer extends React.Component {
             onClick={currentComponent.handleToggle(index)}
             disableRipple 
           />
-          <ListItemText primary={`${group.firstName} ${group.lastName}`} secondary={`Person ID: ${group.id}`}/>
+          <ListItemText primary={`${person.firstName} ${person.lastName}`} secondary={`Person ID: ${person.id}`}/>
         </ListItem>
       );
     });
-
-    console.log('SARDrawer Render');
-    console.log(this.state);
 
     return (
       <div className={classes.root}>

@@ -210,36 +210,6 @@ export default class SARMap extends React.Component {
     });
   }
 
-  // componentWillUpdate() {
-  //   var { markers } = this.props;
-  //   var eventFilteredMarkers = this.filterNumberOfEvents(markers, this.calculateNumberOfEventsFromSlider(markers));
-  //   var transformedMarkers = this.transformMarkers(this.filterPoints(eventFilteredMarkers));
-
-  //   console.log("SARMap render");
-  //   console.log(this.props);
-
-  //   /**
-  //    * Remove all the layers from the map, then add the new filtered layers ontop
-  //    */
-  //   if (this.state.map != null) {
-  //     var layers = [];
-  //     layers.push(DEFAULT_LAYER);
-  //     for (var i=0; i<transformedMarkers.length; i++) {
-  //       layers.push(...this.addMarkersLayer(transformedMarkers[i], transformedMarkers.length * 2, i*2));
-  //     }
-  //     var layerGroup = new LayerGroup({
-  //       name: 'layerGroup',
-  //       layers: layers
-  //     });
-
-  //     const newMap = this.state.map;
-  //     newMap.setLayerGroup(layerGroup);
-  //     this.setState({
-  //       map: newMap,
-  //     });
-  //   }
-  // }
-
   calculateNumberOfEventsFromSlider(markers) {
     var { sliderValue } = this.props;
     var totalNumberOfEvents = 0;
@@ -306,9 +276,6 @@ export default class SARMap extends React.Component {
   }
 
   render() {
-    console.log('SARMap render');
-    console.log(this.props);
-
     var { markers } = this.props;
     var eventFilteredMarkers = this.filterNumberOfEvents(markers, this.calculateNumberOfEventsFromSlider(markers));
     var transformedMarkers = this.transformMarkers(this.filterPoints(eventFilteredMarkers));
@@ -327,11 +294,6 @@ export default class SARMap extends React.Component {
         layers: layers
       });
 
-      // const newMap = this.state.map;
-      // newMap.setLayerGroup(layerGroup);
-      // this.setState({
-      //   map: newMap,
-      // });
       this.state.map.setLayerGroup(layerGroup);
     }
 

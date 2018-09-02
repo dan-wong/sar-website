@@ -21,60 +21,25 @@ class App extends Component {
   }
 
   componentDidMount() {
-    var groupID = this.getUrlParams("groupID");
-    var personID = this.getUrlParams("personID");
+    var searchID = this.getUrlParams("searchID");
 
-    if (groupID == null) {
-      groupID = 1;
+    if (searchID == null) {
+      searchID = 5;
     }
 
-    if (personID == null) {
-      personID = 1;
-    }
-
-    let currentComponent = this;
-    // API.getSearchTrack(personID, groupID).then(function(response) {
-      // var markersList = [];
-
-    //   for (var i=0; i<response.length; i++) {
-    //     markersList.push(response[i]);
-    //   }
-
-      API.getPeopleInGroup(8).then((response) => {
+    let currentComponent = this, data;
+    API.getGroupsInSearch(searchID).then((response) => {
+      data = response;
+      API.getPeopleInGroup(data[0].id).then((response) => {
+        data[0].people = response;
         currentComponent.setState({
-          groups: response
-        });
+          groups: data,
+        })
       });
-
-      // API.getSearchTrack(1, 5).then(function(response) {
-      //   var markersList = [];
-  
-      //   for (var i=0; i<response.length; i++) {
-      //     markersList.push(response[i]);
-      //   }
-
-      //   var temp = [];
-      //   temp.push(markersList);
-  
-      //   currentComponent.setState({
-      //     markers: temp
-      //   });
-      // })
-
-      // currentComponent.setState({
-      //   markers: [...currentComponent.state.markers, markersList]
-      // });
-    // })
+    });
   }
 
   render() {
-    // if (this.state.markers && this.state.markers.length > 0) {
-    //   return (
-    //     <SarDrawer title={"SAR Webservice"} markers={this.state.markers} groups={this.state.groups}/>
-    //   )
-    // } else {
-    //   return (<h1>Loading...</h1>)
-    // }
     if (this.state.groups && this.state.groups.length > 0) {
       return (
         <SarDrawer title={"SAR Webservice"} groups={this.state.groups} groupId={8}/>
