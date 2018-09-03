@@ -14,6 +14,7 @@ import Button from '@material-ui/core/Button';
 import Slider from '@material-ui/lab/Slider';
 import ListItemText from '@material-ui/core/ListItemText';
 import Checkbox from '@material-ui/core/Checkbox';
+import ListSubheader from '@material-ui/core/ListSubheader';
 
 import SARMap from '../map/SARMap';
 
@@ -56,19 +57,28 @@ var maxaccuracy = 100, maxspeed = 80, visibility = 50;
 
 class SarDrawer extends React.Component {
   state = {
-    maxaccuracy: 100,
-    maxspeed: 80,
-    visibility: 50,
+    maxaccuracy: 50,
+    maxspeed: 10,
+    visibility: 20,
     value: 100,
-    checked: new Array(this.props.groups[0].people.length).fill(-1),
+    checked: new Array(this.countPeople(this.props.groups)).fill(-1),
     markers: [],
-    cachedMarkers: new Array(this.props.groups[0].people.length).fill([]),
+    cachedMarkers: new Array(this.countPeople(this.props.groups)).fill([]),
   }
 
   static propTypes = {
     title: PropTypes.string.isRequired,
     groups: PropTypes.array,
-    groupId: PropTypes.number
+  }
+
+  countPeople(groups) {
+    var count = 0;
+    for (var i=0; i<groups.length; i++) {
+      if (groups[i].people != null) {
+        count += groups[i].people.length;
+      }
+    }
+    return count;
   }
 
   updateValues = () => {
@@ -101,15 +111,18 @@ class SarDrawer extends React.Component {
 
     if (checked[value] === -1) {
       checked[value] = 1;
+
+      console.log(value);
       
       let currentComponent = this;
-      console.log(this.props.groups);
-      API.getSearchTrack(this.props.groups[0].people[value].id, this.props.groupId).then(function(response) {
+      API.getSearchTrack(this.props.groups[0].people[value].id, this.props.groups[0].id).then(function(response) {
         var markersList = [];
 
         for (var i=0; i<response.length; i++) {
           markersList.push(response[i]);
         }
+
+        console.log(markersList);
 
         cachedMarkers[value] = markersList;
 
@@ -129,23 +142,33 @@ class SarDrawer extends React.Component {
     const { classes, title } = this.props;
 
     let currentComponent = this;
-
-    const groups = this.props.groups[0].people.map((person, index) => {
-      return (
-        <ListItem
-          key={index}
-          role={undefined}
-          dense
-          className={classes.listItem}
-        >
-          <Checkbox 
-            // checked={currentComponent.state.checked[index] === 1}
-            onClick={currentComponent.handleToggle(index)}
-            disableRipple 
-          />
-          <ListItemText primary={`${person.firstName} ${person.lastName}`} secondary={`Person ID: ${person.id}`}/>
-        </ListItem>
-      );
+    var counter = -1;
+    const groups = this.props.groups.map((group, groupIndex) => {
+      if (group.people != null) {
+        const people = group.people.map(person => {
+          counter++;
+          return (
+            <ListItem
+              key={counter}
+              role={undefined}
+              dense
+              className={classes.listItem}
+            >
+              <Checkbox 
+                onClick={currentComponent.handleToggle(counter)}
+                disableRipple 
+              />
+              <ListItemText primary={`${person.firstName} ${person.lastName}`} secondary={`Person ID: ${person.id}`}/>
+            </ListItem>
+          );
+        });
+        return (
+          <div key={group.id + 100}>
+            <ListSubheader key={group.id}>{`Group ID ${group.id}`}</ListSubheader>
+            {people}
+          </div>
+        );
+      }
     });
 
     return (
@@ -166,14 +189,14 @@ class SarDrawer extends React.Component {
         <div className={classes.toolbar} />
         <List>
           <ListItem>
-            <Slider value={this.state.value} aria-labelledby="label" onChange={this.handleChange} />
+            <ListItemText primary={"Filtering Options"}/>
           </ListItem>
           <ListItem>
             <TextField
               id="accuracy"
               label="Accuracy"
               className={classes.textField}
-              defaultValue="100"
+              defaultValue="50"
               margin="normal" 
               onChange={(event) => {maxaccuracy = event.target.value}}
               InputProps={{
@@ -184,7 +207,7 @@ class SarDrawer extends React.Component {
               id="maxspeed"
               label="Max Speed"
               className={classes.textField}
-              defaultValue="80"
+              defaultValue="10"
               margin="normal" 
               onChange={(event) => {maxspeed = event.target.value}}
               InputProps={{
@@ -196,7 +219,7 @@ class SarDrawer extends React.Component {
               id="visibility"
               label="Visibility"
               className={classes.textField}
-              defaultValue="50"
+              defaultValue="20"
               margin="normal" 
               onChange={(event) => {visibility = event.target.value}}
               InputProps={{
@@ -209,7 +232,15 @@ class SarDrawer extends React.Component {
             </Button>
           </ListItem>
           <ListItem>
-          <ListItemText primary={"Groups"}/>
+            <div style={{width: '90%'}}>
+              <Typography>
+                Time Slider
+              </Typography>
+              <Slider value={this.state.value} onChange={this.handleChange} />
+            </div>
+          </ListItem>
+          <ListItem>
+            <ListItemText primary={"Groups"}/>
           </ListItem>
           {groups}
         </List>

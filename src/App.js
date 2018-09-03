@@ -30,11 +30,13 @@ class App extends Component {
     let currentComponent = this, data;
     API.getGroupsInSearch(searchID).then((response) => {
       data = response;
-      API.getPeopleInGroup(data[0].id).then((response) => {
-        data[0].people = response;
-        currentComponent.setState({
-          groups: data,
-        })
+      data.forEach((element, index) => {
+        API.getPeopleInGroup(element.id).then((response) => {
+          data[index].people = response;
+          currentComponent.setState({
+            groups: data,
+          });
+        });
       });
     });
   }
@@ -42,7 +44,7 @@ class App extends Component {
   render() {
     if (this.state.groups && this.state.groups.length > 0) {
       return (
-        <SarDrawer title={"SAR Webservice"} groups={this.state.groups} groupId={8}/>
+        <SarDrawer title={"SAR Webservice"} groups={this.state.groups} />
       )
     } else {
       return (<h1>Loading...</h1>)
