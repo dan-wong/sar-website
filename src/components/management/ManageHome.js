@@ -8,12 +8,13 @@ import TitleBar from '../common/TitleBar';
 import { getAllSearches } from '../../api';
 import SearchTable from './SearchTable';
 import Button from '@material-ui/core/Button';
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 const styles = theme => ({
   button: {
     margin: theme.spacing.unit * 2,
     '&:hover': {
-      backgroundColor: '#F64C72', 
+      backgroundColor: '#F64C72',
     }
   },
   pStyle: {
@@ -22,6 +23,13 @@ const styles = theme => ({
     color: '#4155B0'
   },
   toolbar: theme.mixins.toolbar,
+  progress: {
+    margin: theme.spacing.unit * 2,
+  },
+  progressContainer: {
+    justifyContent: 'center',
+    display: 'flex',
+  }
 });
 
 class ManageHome extends React.Component {
@@ -29,7 +37,8 @@ class ManageHome extends React.Component {
     super(props);
     this.state = {
       searches: [],
-      tabSelected: 0 //0 = tab 1 (search), 1 = tab 2 (people)
+      tabSelected: 0, //0 = tab 1 (search), 1 = tab 2 (people)
+      inProgress: true,
     };
   }
 
@@ -48,6 +57,7 @@ class ManageHome extends React.Component {
 
       currentComponent.setState({
         searches: searchList,
+        inProgress: false,
       });
       console.log(searchList);
     })
@@ -55,16 +65,28 @@ class ManageHome extends React.Component {
 
   render() {
     const { classes } = this.props;
-    const { tabSelected } = this.state;
+    const { tabSelected, inProgress } = this.state;
 
-    let tableDisplayed = tabSelected == 0 ? <SearchTable searches={this.state.searches} parent={"ManageHome"} /> : null;
+    let tableDisplayed = {};
+    if (inProgress) {
+      tableDisplayed =
+        <div className={classes.progressContainer}>
+          <CircularProgress className={classes.progress} size={50} />
+        </div>
+    }
+    else if (tabSelected == 0) {
+      tableDisplayed = <SearchTable searches={this.state.searches} parent={"ManageHome"} />
+    }
+    else {
+      tableDisplayed = null;
+    }
 
     return (
 
       <div>
-       <TitleBar /> 
-       <div className={classes.toolbar} />
-       <h1 className={classes.pStyle}>Manage Search and People</h1>
+        <TitleBar />
+        <div className={classes.toolbar} />
+        <h1 className={classes.pStyle}>Manage Search and People</h1>
         <Paper style={{ margin: "5%" }}>
           <Tabs value={tabSelected} onChange={this.handleChange}>
             <Tab label="Search" />
@@ -72,7 +94,7 @@ class ManageHome extends React.Component {
           </Tabs>
           <Button variant="contained" color="primary" className={classes.button}
             onClick={() => window.location = `${window.location}createSearch/`}>
-              Start a new search
+            Start a new search
           </Button>
           {tableDisplayed}
         </Paper >

@@ -1,17 +1,18 @@
 import React from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import classNames from 'classnames';
-import queryString from 'query-string' 
+import queryString from 'query-string'
 import TextField from '@material-ui/core/TextField';
 import MenuItem from '@material-ui/core/MenuItem';
 import Paper from '@material-ui/core/Paper';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
-import { getAllPersons, postAllManagement } from '../../api';
+import { getAllPersons, postAllManagement, getFullSearch } from '../../api';
 import TitleBar from '../common/TitleBar';
 import AutoSuggestName from '../autoSuggest/AutoSuggestName';
 import Button from '@material-ui/core/Button';
 import DnDApp from '../dragAndDrop/DragAndDropApp';
 import SaveIcon from '@material-ui/icons/Save';
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 const styles = theme => ({
   root: {
@@ -25,7 +26,7 @@ const styles = theme => ({
   button: {
     margin: theme.spacing.unit,
     '&:hover': {
-      backgroundColor: '#F64C72', 
+      backgroundColor: '#F64C72',
     }
   },
   buttonHolder: {
@@ -34,7 +35,7 @@ const styles = theme => ({
   },
   saveButton: {
     '&:hover': {
-      backgroundColor: '#F64C72', 
+      backgroundColor: '#F64C72',
     }
   },
   margin: {
@@ -59,6 +60,13 @@ const styles = theme => ({
   iconSmall: {
     fontSize: 20,
   },
+  progress: {
+    margin: theme.spacing.unit * 2,
+  },
+  progressContainer: {
+    justifyContent: 'center',
+    display: 'flex',
+  }
 });
 
 function createInitialData() {
@@ -98,42 +106,154 @@ class CreateSearch extends React.Component {
       name: '',
       dndData: createInitialData(),
       personsForSuggestion: [],
+      inProgress: true,
     };
   }
 
   getUrlParams(param) {
     let searchObj = queryString.parse(this.props.location.search);
     let query = searchObj[param];
-    console.log(query);
-
     return query;
+
   }
 
   loadPersons() {
-    // let currentComponent = this;
-    // getAllPersons().then(function (response) {
-    //   var personList = [];
+    let currentComponent = this;
+    getAllPersons().then(function (response) {
+      var personList = [];
 
-    //   let personsAsSuggestions = response.map(person => {
-    //     var personAsSuggestion = {};
-    //     personAsSuggestion.id = person.id;
-    //     personAsSuggestion.label = person.firstName + ' ' + person.lastName;
-    //     return personAsSuggestion;
-    //   });
+      let personsAsSuggestions = response.map(person => {
+        var personAsSuggestion = {};
+        personAsSuggestion.id = person.id;
+        personAsSuggestion.label = person.firstName + ' ' + person.lastName;
+        return personAsSuggestion;
+      });
 
-    //   for (var i = 0; i < personsAsSuggestions.length; i++) {
-    //     personList.push(personsAsSuggestions[i]);
-    //   }
+      for (var i = 0; i < personsAsSuggestions.length; i++) {
+        personList.push(personsAsSuggestions[i]);
+      }
 
-    //   currentComponent.setState({
-    //     personsForSuggestion: personList,
-    //   });
-    // })
+      currentComponent.setState({
+        personsForSuggestion: personList,
+      });
+    });
+  }
+
+  loadFullSearch(searchId) {
+    let currentComponent = this;
+    getFullSearch(searchId).then(function (response) {
+      //Create search data
+      let search = response.search;
+      currentComponent.setState({ searchName: search.name });
+      currentComponent.setState({ searchId: search.id });
+
+      //Create group data
+      let groups = response.groups;
+      let columnsForDnd = {};
+      let columnOrderForDnd = [];
+      let groupKeyCounter = 0;
+      let groupIdKeyMap = {};
+
+      //Create the unassigned group
+      let groupKey = "group" + ++groupKeyCounter;
+      let groupForDnd = {
+        id: "group1",
+        name: 'unassigned',
+        personIds: [],
+        dbId: '---',
+      };
+      columnsForDnd = {
+        ...columnsForDnd,
+        [groupKey]: groupForDnd,
+      };
+      columnOrderForDnd.push(groupKey);
+
+      groups.map((group) => {
+        let groupKey = "group" + ++groupKeyCounter;
+        let groupForDnd = {
+          id: groupKey,
+          name: group.name,
+          dbId: "" + group.id,
+          personIds: [],
+        };
+        columnsForDnd = {
+          ...columnsForDnd,
+          [groupKey]: groupForDnd,
+        };
+        groupIdKeyMap = {
+          ...groupIdKeyMap,
+          [group.id]: groupKey,
+        }
+        columnOrderForDnd.push(groupKey);
+      });
+
+      //Create person data
+      let persons = response.persons;
+      let personsForDnd = {};
+      let personKeyCounter = 0;
+      let personIdKeyMap = {};
+      persons.map((person) => {
+        let personKey = "person" + ++personKeyCounter;
+        let personForDnd = {
+          id: personKey,
+          name: person.firstName + " " + person.lastName,
+          dbId: "" + person.id,
+        };
+        personsForDnd = {
+          ...personsForDnd,
+          [personKey]: personForDnd,
+        };
+        personIdKeyMap = {
+          ...personIdKeyMap,
+          [person.id]: personKey,
+        }
+      });
+
+      //push assignment data
+      let assignments = response.assignments;
+      let unassignedPersonIdKeyMap = Object.assign({}, personIdKeyMap); //Create a deep copy.
+      assignments.map((assignment) => {
+        let personId = assignment.personId;
+        let groupId = assignment.groupId;
+        let personKey = personIdKeyMap[personId];
+        let groupKey = groupIdKeyMap[groupId];
+
+        //Remove a person if it is assigned.
+        delete unassignedPersonIdKeyMap[personId];
+        console.log(unassignedPersonIdKeyMap);
+        columnsForDnd[groupKey].personIds.push(personKey);
+      });
+
+      //Add all unassigned person to unassigned group
+      //note: "key" here is id, "value" here is the personKey
+      Object.keys(unassignedPersonIdKeyMap).map((key) => {
+        let personKey = unassignedPersonIdKeyMap[key];
+        //Group 1 is the unassigned group
+        columnsForDnd.group1.personIds.push(personKey);
+      });
+
+      let newDndData = {
+        persons: personsForDnd,
+        columns: columnsForDnd,
+        columnOrder: columnOrderForDnd
+      };
+      currentComponent.setState(
+        {
+          dndData: newDndData,
+          inProgress: false
+        });
+    });
   }
 
   componentDidMount() {
     this.loadPersons();
-    this.getUrlParams("searchId");
+    let searchId = this.getUrlParams("searchId");
+    //If there is a search Id, then edit mode.
+    if (searchId) {
+      this.loadFullSearch(searchId);
+    } else {
+      this.state.inProgress = false;
+    }
   }
 
 
@@ -221,8 +341,6 @@ class CreateSearch extends React.Component {
       name: newName,
     }
 
-
-
     const newDndData = {
       ...this.state.dndData,
       columns: {
@@ -243,7 +361,7 @@ class CreateSearch extends React.Component {
       let person = dndData.persons[key];
       if (person.dbId === 'new') {
         newPersons.push(person);
-      } 
+      }
       else {
         oldPersons.push(person);
       }
@@ -255,7 +373,7 @@ class CreateSearch extends React.Component {
       let group = dndData.columns[key];
       if (group.dbId === 'new') {
         newGroups.push(group);
-      } 
+      }
       else if (group.dbId !== '---') {
         oldGroups.push(group);
       }
@@ -351,23 +469,26 @@ class CreateSearch extends React.Component {
 
   render() {
     const { classes } = this.props;
+    const { inProgress } = this.state;
 
-    return (
-      <div>
-        <div>
-          <TitleBar />
-          <div className={classes.toolbar} />
-          <h1 className={classes.pStyle}>Create a Search</h1>
-        </div>
+    let contentInPaper = {};
+    if (inProgress) {
+      contentInPaper =
         <Paper style={{ margin: "2%", padding: "2%" }}>
-
+          <div className={classes.progressContainer}>
+            <CircularProgress className={classes.progress} size={50} />
+          </div>
+        </ Paper>
+    }
+    else {
+      contentInPaper =
+        <Paper style={{ margin: "2%", padding: "2%" }}>
           <div className={classes.root}>
-
-
             <TextField
               label="Search name"
               id="name"
               className={classNames(classes.margin, classes.textField)}
+              value={this.state.searchName}
               onChange={this.handleChange('searchName')}
             />
 
@@ -381,11 +502,11 @@ class CreateSearch extends React.Component {
             <Button variant="contained" color="primary" className={classes.button}
               onClick={() => this.handleAddPerson()}>
               Add person
-            </Button>
+        </Button>
             <Button variant="contained" color="primary" className={classes.button}
               onClick={() => this.handleAddGroup()}>
               Add group
-            </Button>
+        </Button>
           </div>
           <DnDApp
             dndData={this.state.dndData}
@@ -398,12 +519,19 @@ class CreateSearch extends React.Component {
                 onClick={() => this.handleSave()}>
                 <SaveIcon className={classNames(classes.leftIcon, classes.iconSmall)} />
                 Save
-              </Button>
+          </Button>
             </div>
-
           </div>
-
         </ Paper>
+    }
+    return (
+      <div>
+        <div>
+          <TitleBar />
+          <div className={classes.toolbar} />
+          <h1 className={classes.pStyle}>Create a Search</h1>
+        </div>
+        {contentInPaper}
       </div>
     );
   }

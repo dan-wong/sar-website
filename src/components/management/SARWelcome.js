@@ -12,13 +12,14 @@ import { renderComponent } from 'recompose';
 import { getAllSearches } from '../../api';
 import SearchTable from './SearchTable';
 import Button from '@material-ui/core/Button';
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 
 const styles = theme => ({
   button: {
     margin: theme.spacing.unit,
     '&:hover': {
-      backgroundColor: '#F64C72', 
+      backgroundColor: '#F64C72',
     }
   },
   pStyle: {
@@ -27,14 +28,22 @@ const styles = theme => ({
     color: '#4155B0'
   },
   toolbar: theme.mixins.toolbar,
+  progress: {
+    margin: theme.spacing.unit * 2,
+  },
+  progressContainer: {
+    justifyContent: 'center',
+    display: 'flex',
+  }
 });
 
 class SARWelcome extends React.Component {
-  
+
   constructor(props) {
     super(props);
     this.state = {
-      searches: []
+      searches: [],
+      inProgress: true,
     };
   }
 
@@ -49,6 +58,7 @@ class SARWelcome extends React.Component {
 
       currentComponent.setState({
         searches: searchList,
+        inProgress: false,
       });
       console.log(searchList);
     })
@@ -56,19 +66,32 @@ class SARWelcome extends React.Component {
 
   render() {
     const { classes } = this.props;
+    const { inProgress } = this.state;
+
+    let tableDisplayed = {};
+    if (inProgress) {
+      tableDisplayed =
+        <div className={classes.progressContainer}>
+          <CircularProgress className={classes.progress} size={50} />
+        </div>
+    }
+    else {
+      tableDisplayed =
+        <SearchTable searches={this.state.searches} parent={"SARWelcome"}>
+        </SearchTable>
+    }
 
     return (
       <div>
         <TitleBar />
-       <div className={classes.toolbar} />
+        <div className={classes.toolbar} />
         <h1 className={classes.pStyle}>Search And Rescue Home</h1>
         <Paper style={{ margin: "5%" }}>
           <Button variant="contained" color="primary" className={classes.button}
             onClick={() => window.location = `${window.location}manage/`}>
-              Manage searches
+            Manage searches
           </Button>
-          <SearchTable searches={this.state.searches} parent={"SARWelcome"}>
-          </SearchTable>
+          {tableDisplayed}
         </Paper>
       </div>
     );
