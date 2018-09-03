@@ -33,6 +33,9 @@ const styles = theme => ({
     textField: {
         flexBasis: 70,
     },
+    idLabel: {
+        fontSize: "10px",
+    },
 });
 
 class Column extends React.Component {
@@ -44,6 +47,7 @@ class Column extends React.Component {
         const { classes } = this.props;
         return (
             <Container>
+                <p className={classNames(classes.idLabel, classes.margin)}> id: {this.props.column.dbId} </p>
                 <TextField
                     label="Group name"
                     id="name"

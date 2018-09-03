@@ -1,17 +1,12 @@
 import React from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import classNames from 'classnames';
-import IconButton from '@material-ui/core/IconButton';
-import Input from '@material-ui/core/Input';
-import InputLabel from '@material-ui/core/InputLabel';
-import InputAdornment from '@material-ui/core/InputAdornment';
-import FormHelperText from '@material-ui/core/FormHelperText';
-import FormControl from '@material-ui/core/FormControl';
+import queryString from 'query-string' 
 import TextField from '@material-ui/core/TextField';
 import MenuItem from '@material-ui/core/MenuItem';
 import Paper from '@material-ui/core/Paper';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
-import { getAllPersons } from '../../api';
+import { getAllPersons, postAllManagement } from '../../api';
 import TitleBar from '../common/TitleBar';
 import AutoSuggestName from '../autoSuggest/AutoSuggestName';
 import Button from '@material-ui/core/Button';
@@ -74,6 +69,7 @@ function createInitialData() {
     id: "group1",
     name: 'unassigned',
     personIds: [],
+    dbId: '---',
   }
 
   const initialData = {
@@ -98,32 +94,46 @@ class CreateSearch extends React.Component {
     super(props);
     this.state = {
       searchName: '',
+      searchId: 'new',
       name: '',
       dndData: createInitialData(),
       personsForSuggestion: [],
     };
   }
 
+  getUrlParams(param) {
+    let searchObj = queryString.parse(this.props.location.search);
+    let query = searchObj[param];
+    console.log(query);
+
+    return query;
+  }
+
+  loadPersons() {
+    // let currentComponent = this;
+    // getAllPersons().then(function (response) {
+    //   var personList = [];
+
+    //   let personsAsSuggestions = response.map(person => {
+    //     var personAsSuggestion = {};
+    //     personAsSuggestion.id = person.id;
+    //     personAsSuggestion.label = person.firstName + ' ' + person.lastName;
+    //     return personAsSuggestion;
+    //   });
+
+    //   for (var i = 0; i < personsAsSuggestions.length; i++) {
+    //     personList.push(personsAsSuggestions[i]);
+    //   }
+
+    //   currentComponent.setState({
+    //     personsForSuggestion: personList,
+    //   });
+    // })
+  }
+
   componentDidMount() {
-    let currentComponent = this;
-    getAllPersons().then(function (response) {
-      var personList = [];
-
-      let personsAsSuggestions = response.map(person => {
-        var personAsSuggestion = {};
-        personAsSuggestion.id = person.id;
-        personAsSuggestion.label = person.firstName + ' ' + person.lastName;
-        return personAsSuggestion;
-      });
-
-      for (var i = 0; i < personsAsSuggestions.length; i++) {
-        personList.push(personsAsSuggestions[i]);
-      }
-
-      currentComponent.setState({
-        personsForSuggestion: personList,
-      });
-    })
+    this.loadPersons();
+    this.getUrlParams("searchId");
   }
 
 
@@ -135,7 +145,7 @@ class CreateSearch extends React.Component {
   getDbIdForPerson = (name) => {
     let arrayOfLabels = this.state.personsForSuggestion.map(person => person.label);
     let index = arrayOfLabels.findIndex(label => label === name);
-    return index === -1 ? -1 : this.state.personsForSuggestion[index].id;
+    return index === -1 ? -1 : "" + this.state.personsForSuggestion[index].id;
   }
 
   handleAddPerson = () => {
@@ -183,6 +193,7 @@ class CreateSearch extends React.Component {
       id: newColumnKey,
       name: 'new group',
       personIds: [],
+      dbId: 'new',
     }
 
     const newColumnOrder = Array.from(this.state.dndData.columnOrder);
@@ -221,6 +232,50 @@ class CreateSearch extends React.Component {
     }
 
     this.setState({ dndData: newDndData });
+  }
+
+  handleSave = () => {
+    const dndData = this.state.dndData;
+
+    let newPersons = [];
+    let oldPersons = [];
+    for (var key in dndData.persons) {
+      let person = dndData.persons[key];
+      if (person.dbId === 'new') {
+        newPersons.push(person);
+      } 
+      else {
+        oldPersons.push(person);
+      }
+    }
+
+    let newGroups = [];
+    let oldGroups = [];
+    for (var key in dndData.columns) {
+      let group = dndData.columns[key];
+      if (group.dbId === 'new') {
+        newGroups.push(group);
+      } 
+      else if (group.dbId !== '---') {
+        oldGroups.push(group);
+      }
+    }
+
+    const searchObjectToPost = {
+      searchName: this.state.searchName,
+      searchId: this.state.searchId,
+      newPersons: newPersons,
+      oldPersons: oldPersons,
+      newGroups: newGroups,
+      oldGroups: oldGroups,
+    }
+
+    console.log(JSON.stringify(searchObjectToPost));
+
+
+    // postAllManagement().then(function (response) {
+
+    // });
   }
 
   onDragEnd = (result) => {

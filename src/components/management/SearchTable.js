@@ -20,11 +20,11 @@ class SearchTable extends React.Component {
   }
 
 
-  cellNavigateHandler() {
+  cellNavigateHandler(id) {
     if (this.props.parent === "SARWelcome") {
       window.location = `${window.location}maps/`
     } else {
-      window.location = `${window.location}search/`
+      window.location = `${window.location}createSearch?searchId=${id}`
     }
 
   }
@@ -48,7 +48,7 @@ class SearchTable extends React.Component {
                 return (
                   <TableRow key={search.id}>
                     <TableCell numeric >{search.id}</TableCell>
-                    <TableCell component="a" onClick={() => this.cellNavigateHandler()} scope="row" className={classes.linkCell}>
+                    <TableCell component="a" onClick={() => this.cellNavigateHandler(search.id)} scope="row" className={classes.linkCell}>
                       {search.name}
                     </TableCell>
                     <TableCell numeric>1</TableCell>

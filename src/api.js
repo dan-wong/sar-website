@@ -36,3 +36,10 @@ export function getAllPersons() {
         });
 }
 
+export function postAllManagement() {
+    return axios.post(`localhost`, {}, config)
+        .then(response => {
+            return response.status;
+        });
+}
+

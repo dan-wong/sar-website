@@ -19,7 +19,6 @@ class TopLevel extends Component {
         <Router>
           <div>
             <Route exact path="/" component={SARWelcome} />
-            <Route exact path="/test" component={DnDApp} />
             <Route path="/maps" component={App} />
             <Route path="/manage/createSearch" component={CreateSearch} />
             <Route exact path="/manage" component={ManageHome} />
