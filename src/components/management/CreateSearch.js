@@ -145,7 +145,7 @@ class CreateSearch extends React.Component {
       //Create search data
       let search = response.search;
       currentComponent.setState({ searchName: search.name });
-      currentComponent.setState({ searchId: search.id });
+      currentComponent.setState({ searchId: "" + search.id });
 
       //Create group data
       let groups = response.groups;
@@ -379,7 +379,7 @@ class CreateSearch extends React.Component {
       }
     }
 
-    const searchObjectToPost = {
+    let searchObjectToPost = {
       searchName: this.state.searchName,
       searchId: this.state.searchId,
       newPersons: newPersons,
@@ -388,12 +388,17 @@ class CreateSearch extends React.Component {
       oldGroups: oldGroups,
     }
 
+    searchObjectToPost = {
+      "group-id": 1,
+      "person-id": 1,
+      "events-array": []
+    }
+
     console.log(JSON.stringify(searchObjectToPost));
 
-
-    // postAllManagement().then(function (response) {
-
-    // });
+    postAllManagement(searchObjectToPost).then(function (response) {
+      console.log(response);
+    });
   }
 
   onDragEnd = (result) => {

@@ -60,7 +60,6 @@ class SARWelcome extends React.Component {
         searches: searchList,
         inProgress: false,
       });
-      console.log(searchList);
     })
   }
 
