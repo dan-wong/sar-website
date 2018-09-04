@@ -107,6 +107,7 @@ class CreateSearch extends React.Component {
       dndData: createInitialData(),
       personsForSuggestion: [],
       inProgress: true,
+      saveInProgress: false,
     };
   }
 
@@ -302,7 +303,10 @@ class CreateSearch extends React.Component {
         }
       }
     }
-    this.setState({ dndData: newDndData });
+    this.setState({ 
+      dndData: newDndData,
+      name: '',
+    });
   }
 
   handleAddGroup() {
@@ -353,6 +357,7 @@ class CreateSearch extends React.Component {
   }
 
   handleSave = () => {
+    this.setState({saveInProgress: true});
     const dndData = this.state.dndData;
 
     let newPersons = [];
@@ -388,16 +393,19 @@ class CreateSearch extends React.Component {
       oldGroups: oldGroups,
     }
 
-    searchObjectToPost = {
-      "group-id": 1,
-      "person-id": 1,
-      "events-array": []
-    }
-
     console.log(JSON.stringify(searchObjectToPost));
-
+    let currentComponent = this;
     postAllManagement(searchObjectToPost).then(function (response) {
-      console.log(response);
+      currentComponent.setState({saveInProgress: false});
+      let newWindowLocation = `${window.location.href}`;
+
+      //Jump to the previous path (i.e. manage)
+      let newUrlArray = newWindowLocation.split('/');
+      newUrlArray.pop();
+      newWindowLocation=newUrlArray.join('/');
+      newWindowLocation = newWindowLocation.concat('/');
+
+      window.location = newWindowLocation;
     });
   }
 
@@ -474,9 +482,11 @@ class CreateSearch extends React.Component {
 
   render() {
     const { classes } = this.props;
-    const { inProgress } = this.state;
+    const { inProgress, saveInProgress } = this.state;
 
     let contentInPaper = {};
+    let saveInProgressCircular = saveInProgress ? <CircularProgress className={classes.progress} size={20} /> : null;
+
     if (inProgress) {
       contentInPaper =
         <Paper style={{ margin: "2%", padding: "2%" }}>
@@ -520,11 +530,12 @@ class CreateSearch extends React.Component {
           />
           <div className={classNames(classes.divFullWidth)}>
             <div className={(classes.buttonHolder)}>
+              {saveInProgressCircular}
               <Button variant="contained" color="primary" className={classNames(classes.button, classes.saveButton)}
                 onClick={() => this.handleSave()}>
                 <SaveIcon className={classNames(classes.leftIcon, classes.iconSmall)} />
                 Save
-          </Button>
+              </Button>
             </div>
           </div>
         </ Paper>

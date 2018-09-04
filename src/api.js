@@ -60,12 +60,8 @@ export function getFullSearch(searchId) {
         });
 }
 
-    //TEST CORS WITH POSTING EVENTS>>>>>>>>>>>>>>>>>>>>>>>>>>
 export function postAllManagement(managementToPost) {
-
-    let jsonToPost = JSON.stringify(managementToPost);
-    console.log(jsonToPost);
-    return axios.post(`https://c44r10nquk.execute-api.ap-southeast-2.amazonaws.com/test/sarFunction?type=event`, { jsonToPost }, configForPost)
+    return axios.post(`https://c44r10nquk.execute-api.ap-southeast-2.amazonaws.com/test/sarFunction?type=search`, JSON.stringify(managementToPost), configForPost)
         .then(response => {
             console.log(response);
             return response.status;
