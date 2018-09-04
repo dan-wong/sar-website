@@ -13,9 +13,10 @@ import LayerVector from 'ol/layer/Vector';
 import { Point, LineString } from 'ol/geom/';
 import { Style, Circle, Fill, Stroke } from 'ol/style/';
 import Overlay from 'ol/Overlay';
+import Draw from 'ol/interaction/Draw';
 
 import { distanceInKmBetweenCoordinates } from '../../functions/LocationFunctions';
-import { rainbow } from '../../functions/ColorGenerator';
+import { rainbow, color } from '../../functions/ColorGenerator';
 
 import styles from './SARMap.css';
 
@@ -31,11 +32,11 @@ const DEFAULT_LAYER = new TileLayer({
   source: new OSM()
 });
 
-
 /**
  * This holds the vector layers displayed ontop of the topographic map layer
  */
 var MARKER_LAYERS = [];
+var DRAWING_LAYER = new LayerVector();
 
 export default class SARMap extends React.Component {
   static propTypes = {
@@ -55,13 +56,15 @@ export default class SARMap extends React.Component {
     maxaccuracy: 50,
     maxspeed: 10,
     visibility: 20,
-    sliderValue: 100
+    sliderValue: 100,
+    map: null,
   }
 
   constructor(props) {
     super(props);
     this.state = {
       map: null,
+      source: new SourceVector({wrapX: false}),
     };
   }
 
@@ -69,6 +72,9 @@ export default class SARMap extends React.Component {
     return new Map({
       layers: [
         DEFAULT_LAYER,
+        // new LayerVector({
+        //   source: this.state.source
+        // }),
         ...MARKER_LAYERS //Place all the layers in the list into the map (... notation)
       ],
       target: 'map',
@@ -129,7 +135,7 @@ export default class SARMap extends React.Component {
    * 
    * @param {Array} markers 
    */
-  addMarkersLayer(markers, numOfSteps, step) {
+  addMarkersLayer(markers, num) {
     var layerArray = [];
 
     var lineSource = new SourceVector({});
@@ -138,7 +144,7 @@ export default class SARMap extends React.Component {
     });
     lineSource.addFeature(featureLine);
 
-    var colorArray = rainbow(numOfSteps, step);
+    var colorArray = color(num);
     var lineColor = 'rgba(' + colorArray[0] + ',' + colorArray[1] + ',' + colorArray[2] + ', 0.6)'; //Generate a random color with opacity 0.6
     // Visibility Line
     layerArray.push(new LayerVector({
@@ -169,7 +175,7 @@ export default class SARMap extends React.Component {
       markerSource.addFeature(iconFeature);
     }
 
-    colorArray = rainbow(numOfSteps, step+1);
+    colorArray = color(num+1);
     var markerColor = 'rgba(' + colorArray[0] + ',' + colorArray[1] + ',' + colorArray[2] + ', 0.75)'; //Generate a random color with opacity 0.75
 
     // Marker Line
@@ -249,6 +255,15 @@ export default class SARMap extends React.Component {
     map.addOverlay(overlay);
 
     /** End Popup Code */
+
+    /** Start polygon code */
+    // const value = "Polygon";
+    // const draw = new Draw({
+    //   source: this.state.source,
+    //   type: value
+    // });
+    // map.addInteraction(draw);
+    /** End polygon code */
 
     map.on('click', function(evt) {
       var feature = map.forEachFeatureAtPixel(evt.pixel, function(feature, layer) {
@@ -347,7 +362,7 @@ export default class SARMap extends React.Component {
       var layers = [];
       layers.push(DEFAULT_LAYER);
       for (var i=0; i<transformedMarkers.length; i++) {
-        layers.push(...this.addMarkersLayer(transformedMarkers[i], transformedMarkers.length * 2, i*2));
+        layers.push(...this.addMarkersLayer(transformedMarkers[i], i*2));
       }
       var layerGroup = new LayerGroup({
         name: 'layerGroup',

@@ -61,24 +61,14 @@ class SarDrawer extends React.Component {
     maxspeed: 10,
     visibility: 20,
     value: 100,
-    checked: new Array(this.countPeople(this.props.groups)).fill(-1),
+    checked: new Array(30).fill(-1),
     markers: [],
-    cachedMarkers: new Array(this.countPeople(this.props.groups)).fill([]),
+    cachedMarkers: new Array(30).fill([]),
   }
 
   static propTypes = {
     title: PropTypes.string.isRequired,
     groups: PropTypes.array,
-  }
-
-  countPeople(groups) {
-    var count = 0;
-    for (var i=0; i<groups.length; i++) {
-      if (groups[i].people != null) {
-        count += groups[i].people.length;
-      }
-    }
-    return count;
   }
 
   updateValues = () => {
@@ -106,23 +96,49 @@ class SarDrawer extends React.Component {
     });
   }
 
+  countNumberOfPeople() {
+    var count = 0;
+    this.props.groups.forEach(element => {
+      count += element.people.length;
+    });
+    return count;
+  }
+
+  getPeopleAndGroupIDFromCount(count) {
+    var tempCount = 0;
+    for (var i=0; i<this.props.groups.length; i++) {
+      var group = this.props.groups[i];
+      for (var j=0; j<group.people.length; j++) {
+        if (tempCount == count) {
+          return [group.people[j].id, group.id];
+        } else {  
+          tempCount++;
+        }
+      }
+    }
+  }
+
   handleToggle = value => () => {
     const { checked, cachedMarkers } = this.state;
 
     if (checked[value] === -1) {
       checked[value] = 1;
 
-      console.log(value);
-      
+      var checkedPersonDetails = this.getPeopleAndGroupIDFromCount(value);
+
       let currentComponent = this;
-      API.getSearchTrack(this.props.groups[0].people[value].id, this.props.groups[0].id).then(function(response) {
+      API.getSearchTrack(checkedPersonDetails[0], checkedPersonDetails[1]).then(function(response) {
         var markersList = [];
+
+        if (response == null) {
+          alert('No data available!');
+          checked[value] = 0;
+          return;
+        }
 
         for (var i=0; i<response.length; i++) {
           markersList.push(response[i]);
         }
-
-        console.log(markersList);
 
         cachedMarkers[value] = markersList;
 
@@ -155,6 +171,7 @@ class SarDrawer extends React.Component {
               className={classes.listItem}
             >
               <Checkbox 
+                checked={this.state.checked[counter] === 1}
                 onClick={currentComponent.handleToggle(counter)}
                 disableRipple 
               />
@@ -164,7 +181,7 @@ class SarDrawer extends React.Component {
         });
         return (
           <div key={group.id + 100}>
-            <ListSubheader key={group.id}>{`Group ID ${group.id}`}</ListSubheader>
+            <ListSubheader key={group.id}>{`${group.name} - ID ${group.id}`}</ListSubheader>
             {people}
           </div>
         );
@@ -188,9 +205,9 @@ class SarDrawer extends React.Component {
       >
         <div className={classes.toolbar} />
         <List>
-          <ListItem>
+          {/* <ListItem>
             <ListItemText primary={"Filtering Options"}/>
-          </ListItem>
+          </ListItem> */}
           <ListItem>
             <TextField
               id="accuracy"
