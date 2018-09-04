@@ -38,6 +38,13 @@ export function getAllSearches() {
         });
 }
 
+export function getAllSearchesWithCount() {
+    return axios.get(`https://c44r10nquk.execute-api.ap-southeast-2.amazonaws.com/test/sarFunction?type=search&allWithCount=true`, config)
+        .then(response => {
+            return response.data.searches;
+        });
+}
+
 export function getAllPersons() {
     return axios.get(`https://c44r10nquk.execute-api.ap-southeast-2.amazonaws.com/test/sarFunction?type=person&all=true`, config)
         .then(response => {

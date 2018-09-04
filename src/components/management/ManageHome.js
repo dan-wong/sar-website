@@ -5,10 +5,11 @@ import { renderComponent } from 'recompose';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import TitleBar from '../common/TitleBar';
-import { getAllSearches } from '../../api';
+import { getAllSearches, getAllPersons, getAllSearchesWithCount } from '../../api';
 import SearchTable from './SearchTable';
 import Button from '@material-ui/core/Button';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import PeopleTable from './PeopleTable';
 
 const styles = theme => ({
   button: {
@@ -29,6 +30,9 @@ const styles = theme => ({
   progressContainer: {
     justifyContent: 'center',
     display: 'flex',
+  },
+  tableContainer: {
+    margin: '0% 10%',
   }
 });
 
@@ -37,8 +41,9 @@ class ManageHome extends React.Component {
     super(props);
     this.state = {
       searches: [],
+      persons: [],
       tabSelected: 0, //0 = tab 1 (search), 1 = tab 2 (people)
-      inProgress: true,
+      inProgress: 0, //0 = loading both, 1 = loaded one, 2 = loaded both
     };
   }
 
@@ -48,7 +53,21 @@ class ManageHome extends React.Component {
 
   componentDidMount() {
     let currentComponent = this;
-    getAllSearches().then(function (response) {
+    getAllPersons().then(response => {
+      //Sort according to id
+      response.sort((thisPerson, otherPerson) => {
+        return thisPerson.id - otherPerson.id;
+      });;
+      currentComponent.setState({
+        inProgress: currentComponent.state.inProgress + 1,
+        persons: response,
+      });
+    });
+    getAllSearchesWithCount().then(function (response) {
+      //Sort according to id
+      response.sort((thisSearch, otherSearch) => {
+        return thisSearch.id - otherSearch.id;
+      });;
       var searchList = [];
 
       for (var i = 0; i < response.length; i++) {
@@ -57,10 +76,10 @@ class ManageHome extends React.Component {
 
       currentComponent.setState({
         searches: searchList,
-        inProgress: false,
+        inProgress: currentComponent.state.inProgress + 1,
       });
       console.log(searchList);
-    })
+    });
   }
 
   render() {
@@ -68,7 +87,7 @@ class ManageHome extends React.Component {
     const { tabSelected, inProgress } = this.state;
 
     let tableDisplayed = {};
-    if (inProgress) {
+    if (inProgress !== 2) { //2 means loaded both
       tableDisplayed =
         <div className={classes.progressContainer}>
           <CircularProgress className={classes.progress} size={50} />
@@ -78,7 +97,7 @@ class ManageHome extends React.Component {
       tableDisplayed = <SearchTable searches={this.state.searches} parent={"ManageHome"} />
     }
     else {
-      tableDisplayed = null;
+      tableDisplayed = <PeopleTable persons={this.state.persons} />
     }
 
     return (
@@ -87,18 +106,19 @@ class ManageHome extends React.Component {
         <TitleBar />
         <div className={classes.toolbar} />
         <h1 className={classes.pStyle}>Manage Search and People</h1>
-        <Paper style={{ margin: "5%" }}>
-          <Tabs value={tabSelected} onChange={this.handleChange}>
-            <Tab label="Search" />
-            <Tab label="People" />
-          </Tabs>
-          <Button variant="contained" color="primary" className={classes.button}
-            onClick={() => window.location = `${window.location}createSearch/`}>
-            Start a new search
+        <div className={classes.tableContainer}>
+          <Paper style={{ margin: "5%" }} >
+            <Tabs value={tabSelected} onChange={this.handleChange}>
+              <Tab label="Search" />
+              <Tab label="People" />
+            </Tabs>
+            <Button variant="contained" color="primary" className={classes.button}
+              onClick={() => window.location = `${window.location}createSearch/`}>
+              Start a new search
           </Button>
-          {tableDisplayed}
-        </Paper >
-
+            {tableDisplayed}
+          </Paper >
+        </div>
       </div>
     );
   }

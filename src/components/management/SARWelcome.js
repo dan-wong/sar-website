@@ -9,7 +9,7 @@ import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
 import TitleBar from '../common/TitleBar';
 import { renderComponent } from 'recompose';
-import { getAllSearches } from '../../api';
+import { getAllSearchesWithCount } from '../../api';
 import SearchTable from './SearchTable';
 import Button from '@material-ui/core/Button';
 import CircularProgress from '@material-ui/core/CircularProgress';
@@ -49,7 +49,7 @@ class SARWelcome extends React.Component {
 
   componentDidMount() {
     let currentComponent = this;
-    getAllSearches().then(function (response) {
+    getAllSearchesWithCount().then(function (response) {
       var searchList = [];
 
       for (var i = 0; i < response.length; i++) {

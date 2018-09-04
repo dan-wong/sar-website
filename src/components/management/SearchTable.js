@@ -51,8 +51,8 @@ class SearchTable extends React.Component {
                     <TableCell component="a" onClick={() => this.cellNavigateHandler(search.id)} scope="row" className={classes.linkCell}>
                       {search.name}
                     </TableCell>
-                    <TableCell numeric>1</TableCell>
-                    <TableCell numeric>1</TableCell>
+                    <TableCell numeric>{search.groupCount}</TableCell>
+                    <TableCell numeric>{search.peopleCount}</TableCell>
                     <TableCell >{search.isActive ? "Active" : "Inactive"}</TableCell>
                   </TableRow>
                 );
