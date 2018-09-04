@@ -5,6 +5,8 @@ import { Droppable } from 'react-beautiful-dnd';
 import TextField from '@material-ui/core/TextField';
 import Person from './person';
 import { withStyles } from '@material-ui/core/styles';
+import IconButton from '@material-ui/core/IconButton';
+import DeleteIcon from '@material-ui/icons/Delete';
 
 const Container = styled.div`
     margin: 8px;
@@ -36,6 +38,27 @@ const styles = theme => ({
     idLabel: {
         fontSize: "10px",
     },
+    deleteButton: {
+        width: '15px',
+        height: '15px',
+        margin: 0,
+        padding: 0,
+    },
+    buttonHolder: {
+        justifyContent: 'flex-end',
+        display: 'flex',
+        width: '75%',
+    },
+    deleteIcon: {
+        fontSize: "20px",
+    },
+    firstRow: {
+        display: 'flex',
+        flexWrap: 'wrap',
+    },
+    topRight: {
+        display: 'flex'
+    }
 });
 
 class Column extends React.Component {
@@ -43,11 +66,27 @@ class Column extends React.Component {
         this.props.handleGroupNameChange(this.props.column.id, event.target.value);
     }
 
+    handleDeleteGroup = () => {
+        this.props.handleDeleteGroup(this.props.column.id);
+    }
+
     render() {
         const { classes } = this.props;
+
+        let iconDiv = this.props.column.dbId === 'new' ?
+        <div className={classes.buttonHolder}>
+            <IconButton className={classes.deleteButton} aria-label="Delete" onClick={() => this.handleDeleteGroup()}>
+                <DeleteIcon className={classes.deleteIcon} />
+            </IconButton>
+        </div>
+        : null;
+
         return (
             <Container>
-                <p className={classNames(classes.idLabel, classes.margin)}> id: {this.props.column.dbId} </p>
+                <div className={classes.firstRow}>
+                    <p className={classNames(classes.idLabel, classes.margin)}> id: {this.props.column.dbId} </p>
+                    {iconDiv}
+                </div>
                 <TextField
                     label="Group name"
                     id="name"
@@ -66,7 +105,12 @@ class Column extends React.Component {
                             isDraggingOver={snapshot.isDraggingOver}
                         >
                             {this.props.persons.map((person, index) => (
-                                <Person key={person.id} person={person} index={index} />
+                                <Person 
+                                    key={person.id} 
+                                    person={person} 
+                                    index={index} 
+                                    handleDeletePerson={this.props.handleDeletePerson}
+                                />
                             ))}
                             {provided.placeholder}
                         </TaskList>

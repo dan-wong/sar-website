@@ -303,7 +303,7 @@ class CreateSearch extends React.Component {
         }
       }
     }
-    this.setState({ 
+    this.setState({
       dndData: newDndData,
       name: '',
     });
@@ -356,8 +356,76 @@ class CreateSearch extends React.Component {
     this.setState({ dndData: newDndData });
   }
 
+  handleDeleteGroup = (groupKey) => {
+    //Get any person assigned to this group, put it to unassigned
+    let newUnassignedPersonIds = this.state.dndData.columns[groupKey].personIds;
+    const oldUnassignedPersonIds = this.state.dndData.columns.group1.personIds;
+    newUnassignedPersonIds.push(...oldUnassignedPersonIds);
+
+    //Remove the groups
+    let newColumns = this.state.dndData.columns;
+    delete newColumns[groupKey];
+
+    let oldColumnOrder = this.state.dndData.columnOrder;
+    let newColumnOrder = oldColumnOrder.filter(g => g !== groupKey);
+
+    //assign the old group persons to "unassigned"
+    const oldGroup1 = this.state.dndData.columns.group1;
+    newColumns = {
+      ...newColumns,
+      group1: {
+        ...oldGroup1,
+        personIds: newUnassignedPersonIds,
+      }
+    };
+
+    //now update the dndData and set state.     
+    let newDndData = {
+      ...this.state.dndData,
+      columns: newColumns,
+      columnOrder: newColumnOrder,
+    };
+    this.setState({ dndData: newDndData });
+  }
+
+  handleDeletePerson = (personKey) => {
+    let newDndData = this.state.dndData;
+    let columns = this.state.dndData.columns;
+
+    //Remove assignments
+    Object.keys(columns).forEach((group) => {
+      const oldPersonIds = columns[group].personIds;
+      let newPersonIds = oldPersonIds.filter(p => p !== personKey);
+      if (newPersonIds.length !== oldPersonIds.length) {
+        newDndData = {
+          ...this.state.dndData,
+          columns: {
+            ...columns,
+            [group]: {
+              ...columns[group],
+              personIds: newPersonIds,
+            }
+          }
+        }
+      }
+    });
+
+    //Remove person
+    const oldPersons = this.state.dndData.persons;
+    let newPersons = oldPersons;
+    delete newPersons[personKey];
+
+    //update dndData and set state
+    newDndData = {
+      ...newDndData,
+      persons: newPersons
+    };
+    console.log(newDndData);
+    this.setState({ dndData: newDndData }); 
+  }
+
   handleSave = () => {
-    this.setState({saveInProgress: true});
+    this.setState({ saveInProgress: true });
     const dndData = this.state.dndData;
 
     let newPersons = [];
@@ -396,13 +464,13 @@ class CreateSearch extends React.Component {
     console.log(JSON.stringify(searchObjectToPost));
     let currentComponent = this;
     postAllManagement(searchObjectToPost).then(function (response) {
-      currentComponent.setState({saveInProgress: false});
+      currentComponent.setState({ saveInProgress: false });
       let newWindowLocation = `${window.location.href}`;
 
       //Jump to the previous path (i.e. manage)
       let newUrlArray = newWindowLocation.split('/');
       newUrlArray.pop();
-      newWindowLocation=newUrlArray.join('/');
+      newWindowLocation = newUrlArray.join('/');
       newWindowLocation = newWindowLocation.concat('/');
 
       window.location = newWindowLocation;
@@ -527,6 +595,8 @@ class CreateSearch extends React.Component {
             dndData={this.state.dndData}
             onDragEnd={this.onDragEnd}
             handleGroupNameChange={this.handleGroupNameChange}
+            handleDeleteGroup={this.handleDeleteGroup}
+            handleDeletePerson={this.handleDeletePerson}
           />
           <div className={classNames(classes.divFullWidth)}>
             <div className={(classes.buttonHolder)}>

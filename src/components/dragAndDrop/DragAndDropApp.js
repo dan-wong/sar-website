@@ -40,6 +40,7 @@ export default class DnDApp extends React.Component {
         this.props.onDragEnd(result);
     }
 
+
     render() {
         return (
             <DragDropContext
@@ -58,6 +59,8 @@ export default class DnDApp extends React.Component {
                             column={column}
                             persons={persons}
                             handleGroupNameChange={this.props.handleGroupNameChange}
+                            handleDeleteGroup={this.props.handleDeleteGroup}
+                            handleDeletePerson={this.props.handleDeletePerson}
                         />;
                     })}
                 </Container>
