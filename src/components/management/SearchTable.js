@@ -22,9 +22,9 @@ class SearchTable extends React.Component {
 
   cellNavigateHandler(id) {
     if (this.props.parent === "SARWelcome") {
-      window.location = `${window.location}maps/`
+      window.location = `${window.location}maps?searchID=${id}`;
     } else {
-      window.location = `${window.location}createSearch?searchId=${id}`
+      window.location = `${window.location}createSearch?searchId=${id}`;
     }
 
   }

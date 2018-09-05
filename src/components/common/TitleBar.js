@@ -21,7 +21,7 @@ class TitleBar extends Component {
             onClick={() => window.location = `${window.location.origin}`} >
          <Toolbar>
            <Typography variant="title" color="inherit" noWrap>
-             Search and Rescue (Web App)
+             SAR Web App
            </Typography>
         </Toolbar>
        </AppBar>

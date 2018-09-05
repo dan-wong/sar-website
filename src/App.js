@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
 
+import queryString from 'query-string'
+
 import SarDrawer from './components/drawer/SarDrawer';
 
 import API from './api';
@@ -14,70 +16,38 @@ class App extends Component {
   }
 
   getUrlParams(param) {
-    var url_string = window.location.href;
-    var url = new URL(url_string);
-    var query = url.searchParams.get(param);
+    let searchObj = queryString.parse(this.props.location.search);
+    let query = searchObj[param];
     return query;
   }
 
   componentDidMount() {
-    var groupID = this.getUrlParams("groupID");
-    var personID = this.getUrlParams("personID");
+    var searchID = this.getUrlParams("searchID");
 
-    if (groupID == null) {
-      groupID = 1;
+    console.log(searchID);
+
+    if (searchID == null) {
+      searchID = 5;
     }
 
-    if (personID == null) {
-      personID = 1;
-    }
-
-    let currentComponent = this;
-    // API.getSearchTrack(personID, groupID).then(function(response) {
-      // var markersList = [];
-
-    //   for (var i=0; i<response.length; i++) {
-    //     markersList.push(response[i]);
-    //   }
-
-      API.getGroupsInSearch(1).then((response) => {
-        currentComponent.setState({
-          groups: response
+    let currentComponent = this, data;
+    API.getGroupsInSearch(searchID).then((response) => {
+      data = response;
+      data.forEach((element, index) => {
+        API.getPeopleInGroup(element.id).then((response) => {
+          data[index].people = response;
+          currentComponent.setState({
+            groups: data,
+          });
         });
       });
-
-      // API.getSearchTrack(1, 5).then(function(response) {
-      //   var markersList = [];
-  
-      //   for (var i=0; i<response.length; i++) {
-      //     markersList.push(response[i]);
-      //   }
-
-      //   var temp = [];
-      //   temp.push(markersList);
-  
-      //   currentComponent.setState({
-      //     markers: temp
-      //   });
-      // })
-
-      // currentComponent.setState({
-      //   markers: [...currentComponent.state.markers, markersList]
-      // });
-    // })
+    });
   }
 
   render() {
-    // if (this.state.markers && this.state.markers.length > 0) {
-    //   return (
-    //     <SarDrawer title={"SAR Webservice"} markers={this.state.markers} groups={this.state.groups}/>
-    //   )
-    // } else {
-    //   return (<h1>Loading...</h1>)
-    // }
     if (this.state.groups && this.state.groups.length > 0) {
       return (
-        <SarDrawer title={"SAR Webservice"} groups={this.state.groups}/>
+        <SarDrawer title={"SAR Webservice"} groups={this.state.groups} />
       )
     } else {
       return (<h1>Loading...</h1>)

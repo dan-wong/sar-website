@@ -115,7 +115,6 @@ class CreateSearch extends React.Component {
     let searchObj = queryString.parse(this.props.location.search);
     let query = searchObj[param];
     return query;
-
   }
 
   loadPersons() {

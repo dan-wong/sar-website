@@ -12,11 +12,13 @@ import SourceVector from 'ol/source/Vector';
 import LayerVector from 'ol/layer/Vector';
 import { Point, LineString } from 'ol/geom/';
 import { Style, Circle, Fill, Stroke } from 'ol/style/';
-
-//import moment from 'moment';
+import Overlay from 'ol/Overlay';
+import Draw from 'ol/interaction/Draw';
 
 import { distanceInKmBetweenCoordinates } from '../../functions/LocationFunctions';
-import { rainbow } from '../../functions/ColorGenerator';
+import { rainbow, color } from '../../functions/ColorGenerator';
+
+import styles from './SARMap.css';
 
 /**
  * This layer is the topographic layer provided by LINZ
@@ -30,11 +32,11 @@ const DEFAULT_LAYER = new TileLayer({
   source: new OSM()
 });
 
-
 /**
  * This holds the vector layers displayed ontop of the topographic map layer
  */
 var MARKER_LAYERS = [];
+var DRAWING_LAYER = new LayerVector();
 
 export default class SARMap extends React.Component {
   static propTypes = {
@@ -49,18 +51,20 @@ export default class SARMap extends React.Component {
   
   static defaultProps = {
     markers: [],
-    zoom: 12,
+    zoom: 14,
     center: { lat: -36.852329, lng: 174.769116 },
-    maxaccuracy: 100,
-    maxspeed: 80,
-    visibility: 50,
-    sliderValue: 100
+    maxaccuracy: 50,
+    maxspeed: 10,
+    visibility: 20,
+    sliderValue: 100,
+    map: null,
   }
 
   constructor(props) {
     super(props);
     this.state = {
       map: null,
+      source: new SourceVector({wrapX: false}),
     };
   }
 
@@ -68,6 +72,9 @@ export default class SARMap extends React.Component {
     return new Map({
       layers: [
         DEFAULT_LAYER,
+        // new LayerVector({
+        //   source: this.state.source
+        // }),
         ...MARKER_LAYERS //Place all the layers in the list into the map (... notation)
       ],
       target: 'map',
@@ -97,9 +104,24 @@ export default class SARMap extends React.Component {
 
       for (var j=0; j<current.length; j++) {
         var marker = current[j];
-        temp.push(transform([marker.longitude, marker.latitude], 'EPSG:4326', 'EPSG:3857'))
+
+        var transformedMarker = transform([marker.longitude, marker.latitude], 'EPSG:4326', 'EPSG:3857');
+        marker.transformedLatitude = transformedMarker[1];
+        marker.transformedLongitude = transformedMarker[0];
+
+        temp.push(marker);
       }
       transformedMarkers.push(temp);
+    }
+    return transformedMarkers;
+  }
+
+  transformMarkersWithoutDetail(markers) {
+    var transformedMarkers = [];
+    for (var j=0; j<markers.length; j++) {
+      var marker = markers[j];
+
+      transformedMarkers.push(transform([marker.longitude, marker.latitude], 'EPSG:4326', 'EPSG:3857'));
     }
     return transformedMarkers;
   }
@@ -113,16 +135,16 @@ export default class SARMap extends React.Component {
    * 
    * @param {Array} markers 
    */
-  addMarkersLayer(markers, numOfSteps, step) {
+  addMarkersLayer(markers, num) {
     var layerArray = [];
 
     var lineSource = new SourceVector({});
     var featureLine = new Feature({
-      geometry: new LineString(markers)
+      geometry: new LineString(this.transformMarkersWithoutDetail(markers))
     });
     lineSource.addFeature(featureLine);
 
-    var colorArray = rainbow(numOfSteps, step);
+    var colorArray = color(num);
     var lineColor = 'rgba(' + colorArray[0] + ',' + colorArray[1] + ',' + colorArray[2] + ', 0.6)'; //Generate a random color with opacity 0.6
     // Visibility Line
     layerArray.push(new LayerVector({
@@ -137,18 +159,23 @@ export default class SARMap extends React.Component {
 
     var markerSource = new SourceVector({});
     for (var i=0; i<markers.length; i++) {
-      var point = markers[i];
-
-      var transformedMarker = transform([point[0], point[1]], 'EPSG:3857', 'EPSG:4326');
+      var point = [markers[i].transformedLongitude, markers[i].transformedLatitude];
 
       var iconFeature = new Feature({
         geometry: new Point(point),
-        name: transformedMarker[1] + ', ' + transformedMarker[0]
+        name: '<p><b>Marker ID ' + markers[i].id + '</b><br />' +
+          'Group ID: ' + markers[i].groupId + '<br />' +
+          'Person ID: ' + markers[i].personId + '<br />' +
+          'Timestamp: ' + markers[i].timestamp +  '<br />' +
+          'Location: ' + markers[i].latitude + ', ' + markers[i].longitude + '<br />' +
+          'Accuracy: ' + markers[i].accuracy + 'm' +
+          '</p>'
       });
+
       markerSource.addFeature(iconFeature);
     }
 
-    colorArray = rainbow(numOfSteps, step+1);
+    colorArray = color(num+1);
     var markerColor = 'rgba(' + colorArray[0] + ',' + colorArray[1] + ',' + colorArray[2] + ', 0.75)'; //Generate a random color with opacity 0.75
 
     // Marker Line
@@ -182,12 +209,13 @@ export default class SARMap extends React.Component {
   }
 
   componentDidMount() {
-    var { markers } = this.props;
-    var eventFilteredMarkers = this.filterNumberOfEvents(markers, this.calculateNumberOfEventsFromSlider(markers));
-    var transformedMarkers = this.transformMarkers(this.filterPoints(eventFilteredMarkers));
-    for (var i=0; i<transformedMarkers.length; i++) {
-      MARKER_LAYERS.push(...this.addMarkersLayer(transformedMarkers[i], transformedMarkers.length * 2, i*2)); //For each array of markers, create their own markers and line layer
-    }
+    // var { markers } = this.props;
+    // var eventFilteredMarkers = this.filterNumberOfEvents(markers, this.calculateNumberOfEventsFromSlider(markers));
+    // var transformedMarkers = this.transformMarkers(this.filterPoints(eventFilteredMarkers));
+    // console.log(transformedMarkers);
+    // for (var i=0; i<transformedMarkers.length; i++) {
+    //   MARKER_LAYERS.push(...this.addMarkersLayer(transformedMarkers[i], transformedMarkers.length * 2, i*2)); //For each array of markers, create their own markers and line layer
+    // }
 
     var map = this.createNewMap();
 
@@ -207,31 +235,54 @@ export default class SARMap extends React.Component {
       }
     });
 
+    /** Popup Code */
+    var container = document.getElementById('popup');
+    var content = document.getElementById('popup-content');
+    var closer = document.getElementById('popup-closer');
+
+    var overlay = new Overlay({
+      element: container,
+      autoPan: true,
+      autoPanAnimation: {
+        duration: 250
+      }
+    });
+    closer.onclick = function() {
+      overlay.setPosition(undefined);
+      closer.blur();
+      return false;
+    };
+    map.addOverlay(overlay);
+
+    /** End Popup Code */
+
+    /** Start polygon code */
+    // const value = "Polygon";
+    // const draw = new Draw({
+    //   source: this.state.source,
+    //   type: value
+    // });
+    // map.addInteraction(draw);
+    /** End polygon code */
+
+    map.on('click', function(evt) {
+      var feature = map.forEachFeatureAtPixel(evt.pixel, function(feature, layer) {
+        return feature;
+      });
+
+      if (feature && feature.values_.geometry.flatCoordinates.length === 2) {
+        var geometry = feature.getGeometry();
+        var coord = geometry.getCoordinates();
+
+
+        content.innerHTML = feature.values_.name;
+        overlay.setPosition(coord);
+      }
+    });
+
     this.setState({
       map: map
     });
-  }
-
-  componentWillUpdate() {
-    var { markers } = this.props;
-    var eventFilteredMarkers = this.filterNumberOfEvents(markers, this.calculateNumberOfEventsFromSlider(markers));
-    var transformedMarkers = this.transformMarkers(this.filterPoints(eventFilteredMarkers));
-
-    /**
-     * Remove all the layers from the map, then add the new filtered layers ontop
-     */
-    if (this.state.map != null) {
-      var layers = [];
-      layers.push(DEFAULT_LAYER);
-      for (var i=0; i<transformedMarkers.length; i++) {
-        layers.push(...this.addMarkersLayer(transformedMarkers[i], transformedMarkers.length * 2, i*2));
-      }
-      var layerGroup = new LayerGroup({
-        name: 'layerGroup',
-        layers: layers
-      });
-      this.state.map.setLayerGroup(layerGroup);
-    }
   }
 
   calculateNumberOfEventsFromSlider(markers) {
@@ -300,10 +351,36 @@ export default class SARMap extends React.Component {
   }
 
   render() {
+    var { markers } = this.props;
+    var eventFilteredMarkers = this.filterNumberOfEvents(markers, this.calculateNumberOfEventsFromSlider(markers));
+    var transformedMarkers = this.transformMarkers(this.filterPoints(eventFilteredMarkers));
+
+    /**
+     * Remove all the layers from the map, then add the new filtered layers ontop
+     */
+    if (this.state.map != null) {
+      var layers = [];
+      layers.push(DEFAULT_LAYER);
+      for (var i=0; i<transformedMarkers.length; i++) {
+        layers.push(...this.addMarkersLayer(transformedMarkers[i], i*2));
+      }
+      var layerGroup = new LayerGroup({
+        name: 'layerGroup',
+        layers: layers
+      });
+
+      this.state.map.setLayerGroup(layerGroup);
+    }
+
     // 64px is the height of the AppBar
     return (
       <section className="panel-map">
-        <div id="map" className="map" ref="olmap" style={{height: 'calc(100vh - 64px)'}}></div> 
+        <div id="map" className="map" ref="olmap" style={{height: 'calc(100vh - 64px)'}}>
+          <div id="popup" className={styles.olpopup}>
+            <a href="#" id="popup-closer" className={styles.olpopupcloser}></a>
+            <div id="popup-content"></div>
+          </div>
+        </div> 
       </section>
     );
   }
