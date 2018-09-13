@@ -1,11 +1,10 @@
 import React from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
-import { renderComponent } from 'recompose';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import TitleBar from '../common/TitleBar';
-import { getAllSearches, getAllPersons, getAllSearchesWithCount } from '../../api';
+import { getAllPersons, getAllSearchesWithCount } from '../../api';
 import SearchTable from './SearchTable';
 import Button from '@material-ui/core/Button';
 import CircularProgress from '@material-ui/core/CircularProgress';

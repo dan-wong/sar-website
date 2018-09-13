@@ -1,14 +1,7 @@
 import React from 'react';
 import { withStyles } from '@material-ui/core/styles';
-import PropTypes from 'prop-types';
-import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
-import TableHead from '@material-ui/core/TableHead';
-import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
 import TitleBar from '../common/TitleBar';
-import { renderComponent } from 'recompose';
 import { getAllSearchesWithCount } from '../../api';
 import SearchTable from './SearchTable';
 import Button from '@material-ui/core/Button';

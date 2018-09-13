@@ -3,9 +3,7 @@ import { withStyles } from '@material-ui/core/styles';
 import classNames from 'classnames';
 import queryString from 'query-string'
 import TextField from '@material-ui/core/TextField';
-import MenuItem from '@material-ui/core/MenuItem';
 import Paper from '@material-ui/core/Paper';
-import VisibilityOff from '@material-ui/icons/VisibilityOff';
 import { getAllPersons, postAllManagement, getFullSearch } from '../../api';
 import TitleBar from '../common/TitleBar';
 import AutoSuggestName from '../autoSuggest/AutoSuggestName';

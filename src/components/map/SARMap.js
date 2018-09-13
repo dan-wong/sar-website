@@ -13,10 +13,9 @@ import LayerVector from 'ol/layer/Vector';
 import { Point, LineString } from 'ol/geom/';
 import { Style, Circle, Fill, Stroke } from 'ol/style/';
 import Overlay from 'ol/Overlay';
-import Draw from 'ol/interaction/Draw';
 
 import { distanceInKmBetweenCoordinates } from '../../functions/LocationFunctions';
-import { rainbow, color } from '../../functions/ColorGenerator';
+import { color } from '../../functions/ColorGenerator';
 
 import styles from './SARMap.css';
 
@@ -36,7 +35,6 @@ const DEFAULT_LAYER = new TileLayer({
  * This holds the vector layers displayed ontop of the topographic map layer
  */
 var MARKER_LAYERS = [];
-var DRAWING_LAYER = new LayerVector();
 
 export default class SARMap extends React.Component {
   static propTypes = {
